@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Env
+.env
+*.env
+backend/.env
+frontend/.env
+
+# Java / Spring
+backend/build/
+backend/target/
+backend/out/
+backend/.gradle/
+*.class
+
+# Vue / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Temp
+tmp/
+temp/
+uploads/
