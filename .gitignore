@@ -10,8 +10,11 @@ Thumbs.db
 # Env
 .env
 *.env
+.env.*
+!.env.example
 backend/.env
 frontend/.env
+application-local.properties
 
 # Java / Spring
 backend/build/
@@ -19,6 +22,8 @@ backend/target/
 backend/out/
 backend/.gradle/
 *.class
+*.jar
+!backend/gradle/wrapper/gradle-wrapper.jar
 
 # Vue / Vite
 frontend/node_modules/
