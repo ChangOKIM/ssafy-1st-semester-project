@@ -35,8 +35,8 @@ public class AuthService {
 		}
 
 		User user = User.create(email, passwordEncoder.encode(request.password()), request.name());
-		User savedUser = userRepository.save(user);
-		return createAuthResponse(savedUser);
+		userRepository.insert(user);
+		return createAuthResponse(user);
 	}
 
 	public AuthResponse login(LoginRequest request) {
