@@ -63,6 +63,17 @@ public class InvestorProfileService {
 		return InvestorProfileResponse.from(profile);
 	}
 
+	public InvestorProfileResponse get(User authenticatedUser) {
+		if (authenticatedUser == null) {
+			throw new BusinessException(ErrorCode.UNAUTHORIZED);
+		}
+
+		InvestorProfile profile = investorProfileRepository.findByUser(authenticatedUser)
+			.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		profile.setUser(authenticatedUser);
+		return InvestorProfileResponse.from(profile);
+	}
+
 	private User resolveUser(User authenticatedUser, Long requestedUserId) {
 		if (authenticatedUser != null) {
 			return authenticatedUser;

@@ -51,6 +51,10 @@ public class AuthService {
 		return createAuthResponse(user);
 	}
 
+	public boolean isEmailAvailable(String email) {
+		return !userRepository.existsByEmail(normalizeEmail(email));
+	}
+
 	private AuthResponse createAuthResponse(User user) {
 		String accessToken = jwtTokenProvider.createAccessToken(user);
 		return new AuthResponse("Bearer", accessToken, jwtTokenProvider.getAccessTokenValiditySeconds(), UserResponse.from(user));

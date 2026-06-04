@@ -9,27 +9,28 @@ const isLoggedIn = computed(() => authStore.isLoggedIn)
 
 function logout() {
   authStore.logout()
-  router.push('/login')
+  router.push('/')
 }
 </script>
 
 <template>
   <header class="app-header">
     <div class="app-header-inner">
-      <RouterLink class="brand" to="/companies">
+      <RouterLink class="brand" to="/">
         <span class="brand-mark">D</span>
         <span>DartPoint AI</span>
       </RouterLink>
 
       <nav class="main-nav" aria-label="주요 메뉴">
-        <RouterLink to="/companies">기업 검색</RouterLink>
-        <RouterLink to="/companies">추천 기업</RouterLink>
-        <RouterLink to="/companies">투자현황</RouterLink>
-        <RouterLink to="/investor-profile">마이페이지</RouterLink>
+        <RouterLink to="/">홈</RouterLink>
+        <RouterLink to="/recommendations">AI 추천</RouterLink>
+        <RouterLink to="/holdings">투자현황</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/mypage">마이페이지</RouterLink>
       </nav>
 
       <div class="header-actions">
         <template v-if="isLoggedIn">
+          <RouterLink to="/mypage">내 정보</RouterLink>
           <button type="button" @click="logout">로그아웃</button>
         </template>
         <template v-else>

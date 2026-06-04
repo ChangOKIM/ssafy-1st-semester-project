@@ -1,5 +1,6 @@
 package com.ssafy.dartservice.stock;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ public class StockController {
 
     private final StockService stockService;
 
+    @Hidden
     @PostMapping("/init")
     public ResponseEntity<String> initStocks() {
         stockService.fetchAndSaveStocks();

@@ -1,9 +1,13 @@
 import api from './api'
 
-export function saveInvestorProfile(payload) {
-  return api.put('/api/v1/users/me/investor-profile', payload)
+export function getMyInfo() {
+  return api.get('/users/me')
 }
 
-export function getMyInfo() {
-  return api.get('/api/v1/users/me')
+export function getInvestorProfile() {
+  return api.get('/users/me/user-profile')
+}
+
+export function saveInvestorProfile(payload) {
+  return api.put('/users/me/user-profile', payload)
 }

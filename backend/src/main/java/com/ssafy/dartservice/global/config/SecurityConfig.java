@@ -39,7 +39,7 @@ public class SecurityConfig {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/v1/health", "/api/v1/auth/signup", "/api/v1/auth/login", "/stocks/**", "/reports/**").permitAll()
+				.requestMatchers("/api/v1/health", "/auth/signup", "/auth/login", "/auth/check-email", "/stocks/search", "/stocks/init").permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 				.anyRequest().authenticated()
 			)
@@ -62,7 +62,7 @@ public class SecurityConfig {
 		configuration.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/api/**", configuration);
+		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
 }
