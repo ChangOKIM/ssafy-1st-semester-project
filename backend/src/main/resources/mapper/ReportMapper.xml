@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.dartservice.report.ReportMapper">
+
+    <select id="searchByKeyword" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
+        SELECT stock_code, stock_name, market
+        FROM stocks
+        WHERE stock_name LIKE CONCAT(#{keyword}, '%')
+           OR stock_code LIKE CONCAT(#{keyword}, '%')
+        LIMIT 8
+    </select>
+
+    <select id="findFinancial" resultType="com.ssafy.dartservice.report.financial.StockFinancial">
+        SELECT * FROM stock_financials
+        WHERE stock_code = #{stockCode} AND base_year = #{baseYear}
+    </select>
+
+    <select id="findCorpCode" resultType="string">
+        SELECT corp_code FROM stocks WHERE stock_code = #{stockCode}
+    </select>
+
+    <insert id="insertFinancial" parameterType="com.ssafy.dartservice.report.financial.StockFinancial">
+        INSERT INTO stock_financials
+        (stock_code, base_year, revenue, operating_profit, net_income,
+         total_assets, total_debt, total_equity, current_assets, current_liabilities,
+         finance_costs, operating_cash_flow,
+         debt_ratio, operating_margin, roe, current_ratio, interest_coverage)
+        VALUES
+            (#{stockCode}, #{baseYear}, #{revenue}, #{operatingProfit}, #{netIncome},
+             #{totalAssets}, #{totalDebt}, #{totalEquity}, #{currentAssets}, #{currentLiabilities},
+             #{financeCosts}, #{operatingCashFlow},
+             #{debtRatio}, #{operatingMargin}, #{roe}, #{currentRatio}, #{interestCoverage})
+            ON DUPLICATE KEY UPDATE
+                                 revenue=VALUES(revenue), operating_profit=VALUES(operating_profit),
+                                 net_income=VALUES(net_income), total_assets=VALUES(total_assets),
+                                 total_debt=VALUES(total_debt), total_equity=VALUES(total_equity),
+                                 current_assets=VALUES(current_assets), current_liabilities=VALUES(current_liabilities),
+                                 finance_costs=VALUES(finance_costs), operating_cash_flow=VALUES(operating_cash_flow),
+                                 debt_ratio=VALUES(debt_ratio), operating_margin=VALUES(operating_margin),
+                                 roe=VALUES(roe), current_ratio=VALUES(current_ratio),
+                                 interest_coverage=VALUES(interest_coverage)
+    </insert>
+
+</mapper>

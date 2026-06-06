@@ -12,7 +12,7 @@ public class StockController {
 
     private final StockService stockService;
 
-    @Hidden
+    //@Hidden
     @PostMapping("/init")
     public ResponseEntity<String> initStocks() {
         stockService.fetchAndSaveStocks();

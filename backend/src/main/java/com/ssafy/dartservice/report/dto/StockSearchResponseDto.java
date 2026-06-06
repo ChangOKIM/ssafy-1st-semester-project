@@ -1,4 +1,4 @@
-package com.ssafy.dartservice.report;
+package com.ssafy.dartservice.report.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
