@@ -24,4 +24,6 @@ public class StockController {
         StockPriceResponseDto price = stockService.getStockPrice(code);
         return ResponseEntity.ok(price);
     }
+
+
 }

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -27,19 +28,26 @@ public class ReportController {
         return ResponseEntity.ok(reportService.searchStocks(keyword));
     }
 
-    @GetMapping("/{code}/chart")
+    @GetMapping("/{stockCode}/chart")
     public ResponseEntity<List<ChartResponseDto>> getStockChart(
-            @PathVariable String code,
+            @PathVariable String stockCode,
             @RequestParam(defaultValue = "D") String period) {
 
-        List<ChartResponseDto> chart = reportService.getStockChart(code, period);
+        List<ChartResponseDto> chart = reportService.getChart(stockCode, period);
         return ResponseEntity.ok(chart);
     }
 
-    @GetMapping("/{code}/financial")
+    @GetMapping("/{stockCode}/financial")
     public ResponseEntity<List<FinancialResponseDto>> getFinancials(
-            @PathVariable String code,
+            @PathVariable String stockCode,
             @RequestParam(defaultValue = "2025") int year) {
-        return ResponseEntity.ok(reportService.getFinancials(code, year));
+        return ResponseEntity.ok(reportService.getFinancials(stockCode, year));
+    }
+
+    @GetMapping("/{stockCode}/report")
+    public ResponseEntity<String> getReport(@PathVariable String stockCode) {
+        int latestYear = LocalDate.now().getYear() - 1;  // 작년 기준 (DART 연간보고서는 1년 지연)
+        String report = reportService.getReport(stockCode, latestYear);
+        return ResponseEntity.ok(report);
     }
 }

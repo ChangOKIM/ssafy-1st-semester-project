@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StockSearchResponseDto {
     private String stockCode;
+    private String corpCode;
     private String stockName;
     private String market;
 }

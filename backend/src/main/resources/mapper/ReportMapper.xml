@@ -12,6 +12,12 @@
         LIMIT 8
     </select>
 
+    <select id="findById" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
+        SELECT stock_code, corp_code, stock_name, market
+        FROM stocks
+        WHERE stock_code = #{stockCode}
+    </select>
+
     <select id="findFinancial" resultType="com.ssafy.dartservice.report.financial.StockFinancial">
         SELECT * FROM stock_financials
         WHERE stock_code = #{stockCode} AND base_year = #{baseYear}
