@@ -1,4 +1,4 @@
-package com.ssafy.dartservice.report.financial;
+package com.ssafy.dartservice.stock.dart;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

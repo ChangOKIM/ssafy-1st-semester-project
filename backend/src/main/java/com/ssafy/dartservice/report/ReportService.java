@@ -1,10 +1,12 @@
 package com.ssafy.dartservice.report;
 
-import com.ssafy.dartservice.report.dto.ChartResponseDto;
-import com.ssafy.dartservice.report.dto.FinancialResponseDto;
 import com.ssafy.dartservice.report.dto.ReportInput;
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
+import com.ssafy.dartservice.stock.ChartService;
+import com.ssafy.dartservice.stock.FinancialService;
 import com.ssafy.dartservice.stock.StockService;
+import com.ssafy.dartservice.stock.dto.ChartResponseDto;
+import com.ssafy.dartservice.stock.dto.FinancialResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

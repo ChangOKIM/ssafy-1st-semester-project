@@ -1,6 +1,6 @@
-package com.ssafy.dartservice.report;
+package com.ssafy.dartservice.stock;
 
-import com.ssafy.dartservice.report.dto.ChartResponseDto;
+import com.ssafy.dartservice.stock.dto.ChartResponseDto;
 import com.ssafy.dartservice.stock.kis.KisChartResponse;
 import com.ssafy.dartservice.stock.kis.KisTokenService;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.ssafy.dartservice.stock;
+package com.ssafy.dartservice.stock.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,7 @@
 package com.ssafy.dartservice.report;
 
-import com.ssafy.dartservice.report.dto.ChartResponseDto;
-import com.ssafy.dartservice.report.dto.FinancialResponseDto;
+import com.ssafy.dartservice.stock.dto.ChartResponseDto;
+import com.ssafy.dartservice.stock.dto.FinancialResponseDto;
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

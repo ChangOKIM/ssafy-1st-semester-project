@@ -1,7 +1,7 @@
 package com.ssafy.dartservice.report;
 
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
-import com.ssafy.dartservice.report.financial.StockFinancial;
+import com.ssafy.dartservice.stock.dart.StockFinancial;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

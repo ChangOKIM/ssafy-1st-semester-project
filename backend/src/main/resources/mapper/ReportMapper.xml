@@ -18,7 +18,7 @@
         WHERE stock_code = #{stockCode}
     </select>
 
-    <select id="findFinancial" resultType="com.ssafy.dartservice.report.financial.StockFinancial">
+    <select id="findFinancial" resultType="com.ssafy.dartservice.stock.dart.StockFinancial">
         SELECT * FROM stock_financials
         WHERE stock_code = #{stockCode} AND base_year = #{baseYear}
     </select>
@@ -27,7 +27,7 @@
         SELECT corp_code FROM stocks WHERE stock_code = #{stockCode}
     </select>
 
-    <insert id="insertFinancial" parameterType="com.ssafy.dartservice.report.financial.StockFinancial">
+    <insert id="insertFinancial" parameterType="com.ssafy.dartservice.stock.dart.StockFinancial">
         INSERT INTO stock_financials
         (stock_code, base_year, revenue, operating_profit, net_income,
          total_assets, total_debt, total_equity, current_assets, current_liabilities,

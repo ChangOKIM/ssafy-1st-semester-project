@@ -1,6 +1,6 @@
-package com.ssafy.dartservice.report.dto;
+package com.ssafy.dartservice.stock.dto;
 
-import com.ssafy.dartservice.report.financial.StockFinancial;
+import com.ssafy.dartservice.stock.dart.StockFinancial;
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,5 +1,6 @@
 package com.ssafy.dartservice.stock;
 
+import com.ssafy.dartservice.stock.dto.StockPriceResponseDto;
 import com.ssafy.dartservice.stock.kis.KisPriceResponse;
 import com.ssafy.dartservice.stock.kis.KisTokenService;
 import lombok.RequiredArgsConstructor;

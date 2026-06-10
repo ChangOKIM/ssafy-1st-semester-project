@@ -1,6 +1,6 @@
 package com.ssafy.dartservice.stock;
 
-import io.swagger.v3.oas.annotations.Hidden;
+import com.ssafy.dartservice.stock.dto.StockPriceResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
