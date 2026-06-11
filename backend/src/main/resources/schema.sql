@@ -2,8 +2,8 @@ USE dart_service;
 
 
 CREATE TABLE IF NOT EXISTS users (
-                                     id BIGINT NOT NULL AUTO_INCREMENT,
-                                     email VARCHAR(100) NOT NULL,
+     id BIGINT NOT NULL AUTO_INCREMENT,
+     email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     name VARCHAR(50) NOT NULL,
     role VARCHAR(20) NOT NULL,
@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
     );
 
 CREATE TABLE IF NOT EXISTS users_profile (
-                                             id BIGINT NOT NULL AUTO_INCREMENT,
-                                             user_id BIGINT NOT NULL,
-                                             investment_experience VARCHAR(30) NOT NULL,
+     id BIGINT NOT NULL AUTO_INCREMENT,
+     user_id BIGINT NOT NULL,
+     investment_experience VARCHAR(30) NOT NULL,
     risk_tolerance VARCHAR(30) NOT NULL,
     investment_goal VARCHAR(30) NOT NULL,
     investable_amount DECIMAL(15, 0) NOT NULL,
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS stock_reports (
 
 -- 6. recommendations (추천 종목)
 CREATE TABLE IF NOT EXISTS recommendations (
-                                               id           BIGINT       NOT NULL AUTO_INCREMENT,
-                                               user_id      BIGINT       NOT NULL,
-                                               stock_code   VARCHAR(10)  NOT NULL,
+   id           BIGINT       NOT NULL AUTO_INCREMENT,
+   user_id      BIGINT       NOT NULL,
+   stock_code   VARCHAR(10)  NOT NULL,
     rec_type     VARCHAR(20)  NOT NULL,   -- 'OVERALL' | 'SECTOR'
     score        DECIMAL(5,2) NOT NULL,
     reason       TEXT,
@@ -108,9 +108,9 @@ CREATE TABLE IF NOT EXISTS recommendations (
 
 -- 7. holdings (P1 — 나의 투자 현황)
 CREATE TABLE IF NOT EXISTS holdings (
-                                        id             BIGINT         NOT NULL AUTO_INCREMENT,
-                                        user_id        BIGINT         NOT NULL,
-                                        stock_code     VARCHAR(10)    NOT NULL,
+    id             BIGINT         NOT NULL AUTO_INCREMENT,
+    user_id        BIGINT         NOT NULL,
+    stock_code     VARCHAR(10)    NOT NULL,
     quantity       INT            NOT NULL,
     purchase_price DECIMAL(12, 2) NOT NULL,
     purchase_date  DATE           NOT NULL,
