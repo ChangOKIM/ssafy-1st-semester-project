@@ -15,13 +15,15 @@ import java.util.List;
 public class StockController {
 
     private final StockService stockService;
+    private final StockInitService stockInitService;
     private final ChartService chartService;
     private final FinancialService financialService;
 
-    //@Hidden
+
     @PostMapping("/init")
     public ResponseEntity<String> initStocks() {
-        stockService.fetchAndSaveStocks();
+        //stockService.fetchAndSaveStocks();
+        stockInitService.initAll();
         return ResponseEntity.ok("종목 데이터 저장 완료");
     }
 

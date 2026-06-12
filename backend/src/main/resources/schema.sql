@@ -2,8 +2,8 @@ USE dart_service;
 
 
 CREATE TABLE IF NOT EXISTS users (
-     id BIGINT NOT NULL AUTO_INCREMENT,
-     email VARCHAR(100) NOT NULL,
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     name VARCHAR(50) NOT NULL,
     role VARCHAR(20) NOT NULL,
@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
     );
 
 CREATE TABLE IF NOT EXISTS users_profile (
-     id BIGINT NOT NULL AUTO_INCREMENT,
-     user_id BIGINT NOT NULL,
-     investment_experience VARCHAR(30) NOT NULL,
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    investment_experience VARCHAR(30) NOT NULL,
     risk_tolerance VARCHAR(30) NOT NULL,
     investment_goal VARCHAR(30) NOT NULL,
     investable_amount DECIMAL(15, 0) NOT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS users_profile (
 
 -- 3. stocks (종목 정보)
 CREATE TABLE IF NOT EXISTS stocks (
-  id          BIGINT       NOT NULL AUTO_INCREMENT,
-  stock_code  VARCHAR(10)  NOT NULL,
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    stock_code  VARCHAR(10)  NOT NULL,
     corp_code   VARCHAR(8)   NULL,
     stock_name  VARCHAR(100) NOT NULL,
     market      VARCHAR(10)  NOT NULL,
@@ -44,6 +44,15 @@ CREATE TABLE IF NOT EXISTS stocks (
     INDEX idx_stocks_name (stock_name),
     INDEX idx_stocks_sector (sector)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS stock_info (
+    stock_code   VARCHAR(20) NOT NULL,
+    sector       VARCHAR(50) NOT NULL,
+    dividend_yield DECIMAL(5,2),       -- V1.5
+    volatility     DECIMAL(6,3),        -- V1.5
+    updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (stock_code)
+    );
 
 
 -- 4. stock_financials (종목 상세)
@@ -80,8 +89,8 @@ CREATE TABLE IF NOT EXISTS stock_financials (
 
 -- 5. stock_reports (종목리포트)
 CREATE TABLE IF NOT EXISTS stock_reports (
-                                             id          BIGINT        NOT NULL AUTO_INCREMENT,
-                                             stock_code  VARCHAR(10)   NOT NULL,
+    id          BIGINT        NOT NULL AUTO_INCREMENT,
+    stock_code  VARCHAR(10)   NOT NULL,
     content     TEXT          NOT NULL,
     generated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -92,9 +101,9 @@ CREATE TABLE IF NOT EXISTS stock_reports (
 
 -- 6. recommendations (추천 종목)
 CREATE TABLE IF NOT EXISTS recommendations (
-   id           BIGINT       NOT NULL AUTO_INCREMENT,
-   user_id      BIGINT       NOT NULL,
-   stock_code   VARCHAR(10)  NOT NULL,
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id      BIGINT       NOT NULL,
+    stock_code   VARCHAR(10)  NOT NULL,
     rec_type     VARCHAR(20)  NOT NULL,   -- 'OVERALL' | 'SECTOR'
     score        DECIMAL(5,2) NOT NULL,
     reason       TEXT,

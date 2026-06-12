@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.dartservice.stock.StockMapper">
+
+    <select id="countStocks" resultType="int">
+        SELECT COUNT(*) FROM stocks
+    </select>
+
+    <insert id="insertStock" parameterType="stockInfo">
+        INSERT IGNORE INTO stocks (stock_code, corp_code, stock_name, market, sector)
+    VALUES (#{stockCode}, #{corpCode}, #{stockName}, #{market}, #{sector})
+    </insert>
+
+    <insert id="insertStockInfo" parameterType="stockInfo">
+        INSERT INTO stock_info (stock_code, sector)
+        VALUES (#{stockCode}, #{sector})
+            ON DUPLICATE KEY UPDATE sector = #{sector}, updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+</mapper>
