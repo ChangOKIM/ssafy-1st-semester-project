@@ -1,7 +1,7 @@
 import api from './api'
 
 export function searchStocks(keyword) {
-  return api.get('/stocks/search', { params: { keyword } })
+  return api.get('/reports/search', { params: { keyword } })
 }
 
 export function getStockPrice(code) {

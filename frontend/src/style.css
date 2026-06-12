@@ -286,6 +286,14 @@ h2 {
   font-weight: 900;
 }
 
+.summary-header small {
+  display: block;
+  margin-top: 4px;
+  color: #68766e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .summary-header button {
   min-height: 36px;
   padding: 0 12px;
@@ -339,6 +347,143 @@ h2 {
 .ranking-grid li b {
   float: right;
   color: #1f6f5b;
+}
+
+.sector-recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.sector-recommend-card,
+.overall-ranking-card {
+  border: 1px solid #e0e8e2;
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.sector-recommend-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.sector-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sector-card-head strong {
+  color: #102018;
+  font-size: 14px;
+}
+
+.sector-card-head span {
+  color: #1f6f5b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sector-recommend-card ol,
+.overall-ranking-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sector-recommend-card li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #25342b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sector-recommend-card li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sector-recommend-card li b,
+.overall-ranking-list li b {
+  color: #1f6f5b;
+}
+
+.overall-ranking-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.ranking-title,
+.overall-ranking-list li {
+  display: grid;
+  grid-template-columns: 34px 1fr 54px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ranking-title {
+  grid-template-columns: 1fr 54px;
+}
+
+.ranking-title h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ranking-title span {
+  color: #68766e;
+  font-size: 12px;
+  font-weight: 900;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.overall-ranking-list li {
+  min-height: 48px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  background: #f4f8f5;
+}
+
+.overall-ranking-list em {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 6px;
+  background: #1f6f5b;
+  color: #fff;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.overall-ranking-list strong {
+  display: block;
+  color: #102018;
+  font-size: 14px;
+}
+
+.overall-ranking-list span {
+  display: block;
+  margin-top: 2px;
+  color: #68766e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.overall-ranking-list b {
+  text-align: right;
 }
 
 .panel-message {
@@ -559,6 +704,170 @@ dd {
   min-height: 170px;
 }
 
+.holding-form {
+  margin-bottom: 18px;
+}
+
+.holding-search-row,
+.holding-actions,
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.holding-search-row input {
+  flex: 1;
+}
+
+.holding-search-panel {
+  margin: 0;
+  padding: 10px;
+}
+
+.holding-form-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr 0.8fr 0.8fr;
+  gap: 12px;
+}
+
+.secondary-action {
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid #cbd8cf;
+  border-radius: 6px;
+  background: #fff;
+  color: #25342b;
+  font-weight: 900;
+}
+
+.holding-table {
+  display: grid;
+  gap: 8px;
+}
+
+.holding-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.5fr 0.8fr 0.8fr 0.9fr 1fr 0.8fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f7faf6;
+}
+
+.holding-head {
+  background: #e9f0eb;
+  color: #68766e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.holding-row strong {
+  color: #102018;
+}
+
+.holding-row small {
+  display: block;
+  color: #68766e;
+  font-size: 12px;
+}
+
+.holding-row span {
+  color: #5d6b61;
+  font-weight: 700;
+}
+
+.row-actions button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid #cbd8cf;
+  border-radius: 6px;
+  background: #fff;
+  color: #25342b;
+  font-weight: 900;
+}
+
+.account-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.profile-image-box {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+
+.profile-image-box img,
+.profile-initial {
+  width: 156px;
+  height: 156px;
+  border-radius: 8px;
+  border: 1px solid #cbd8cf;
+  object-fit: cover;
+}
+
+.profile-initial {
+  display: grid;
+  place-items: center;
+  background: #e9f0eb;
+  color: #1f6f5b;
+  font-size: 52px;
+  font-weight: 900;
+}
+
+.image-upload {
+  display: inline-flex;
+  align-items: center;
+}
+
+.image-upload input {
+  display: none;
+}
+
+.diagnosis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.diagnosis-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid #d6ded8;
+  border-radius: 8px;
+  background: #f7faf6;
+}
+
+.diagnosis-card h3 {
+  margin: 0;
+  color: #102018;
+  font-size: 16px;
+}
+
+.diagnosis-card p {
+  margin: 0;
+  color: #5d6b61;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.diagnosis-guide {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: #25342b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .app-footer {
   margin-top: auto;
   border-top: 1px solid #24372d;
@@ -721,6 +1030,17 @@ dd {
   .holding-list div {
     grid-template-columns: 1fr 1fr;
   }
+
+  .holding-form-grid,
+  .holding-row,
+  .account-card,
+  .diagnosis-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .holding-head {
+    display: none;
+  }
 }
 
 @media (max-width: 560px) {
@@ -730,6 +1050,19 @@ dd {
 
   .stock-search button {
     min-height: 44px;
+  }
+
+  .holding-search-row,
+  .holding-actions,
+  .row-actions {
+    flex-direction: column;
+  }
+
+  .holding-form-grid,
+  .holding-row,
+  .account-card,
+  .diagnosis-grid {
+    grid-template-columns: 1fr;
   }
 
   .header-actions {

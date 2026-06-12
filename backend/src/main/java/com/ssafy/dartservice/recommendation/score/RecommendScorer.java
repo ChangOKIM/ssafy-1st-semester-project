@@ -16,17 +16,17 @@ public class RecommendScorer {
         double risk = riskFit(in.debtRatio(), in.userRisk());
         double goal = goalFit(in);
 
-        return sector * com.ssafy.dartservice.recommend.score.ScoreWeights.SECTOR
-             + financial * com.ssafy.dartservice.recommend.score.ScoreWeights.FINANCIAL
-             + risk * com.ssafy.dartservice.recommend.score.ScoreWeights.RISK
-             + goal * com.ssafy.dartservice.recommend.score.ScoreWeights.GOAL;
+        return sector * ScoreWeights.SECTOR
+             + financial * ScoreWeights.FINANCIAL
+             + risk * ScoreWeights.RISK
+             + goal * ScoreWeights.GOAL;
     }
 
     // ① 섹터 적합도
     private double sectorFit(String stockSector, List<String> userSectors) {
         return userSectors.contains(stockSector)
-                ? com.ssafy.dartservice.recommend.score.ScoreWeights.SECTOR_MATCH
-                : com.ssafy.dartservice.recommend.score.ScoreWeights.SECTOR_NONMATCH;
+                ? ScoreWeights.SECTOR_MATCH
+                : ScoreWeights.SECTOR_NONMATCH;
     }
 
     // ② 재무 건전성
@@ -34,9 +34,9 @@ public class RecommendScorer {
         double debt = debtScore(in.debtRatio());
         double interest = interestScore(in.interestCoverage());
         double current = currentScore(in.currentRatio());
-        return debt * com.ssafy.dartservice.recommend.score.ScoreWeights.FIN_DEBT
-             + interest * com.ssafy.dartservice.recommend.score.ScoreWeights.FIN_INTEREST
-             + current * com.ssafy.dartservice.recommend.score.ScoreWeights.FIN_CURRENT;
+        return debt * ScoreWeights.FIN_DEBT
+             + interest * ScoreWeights.FIN_INTEREST
+             + current * ScoreWeights.FIN_CURRENT;
     }
 
     // ③ 리스크 적합도 (성향 × 위험도 매트릭스)

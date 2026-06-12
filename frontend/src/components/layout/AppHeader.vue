@@ -24,13 +24,13 @@ function logout() {
       <nav class="main-nav" aria-label="주요 메뉴">
         <RouterLink to="/">홈</RouterLink>
         <RouterLink to="/recommendations">AI 추천</RouterLink>
-        <RouterLink to="/holdings">투자현황</RouterLink>
-        <RouterLink v-if="isLoggedIn" to="/mypage">마이페이지</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/holdings">투자현황</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/mypage">투자성향</RouterLink>
       </nav>
 
       <div class="header-actions">
         <template v-if="isLoggedIn">
-          <RouterLink to="/mypage">내 정보</RouterLink>
+          <RouterLink to="/myinfo">내정보</RouterLink>
           <button type="button" @click="logout">로그아웃</button>
         </template>
         <template v-else>

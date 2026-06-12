@@ -1,4 +1,4 @@
-package com.ssafy.dartservice.recommend.score;
+package com.ssafy.dartservice.recommendation.score;
 
 public class ScoreWeights {
     // 4대 요소 가중치

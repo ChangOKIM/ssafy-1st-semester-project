@@ -6,7 +6,6 @@
 
     <select id="findAll" resultType="com.ssafy.dartservice.recommendation.dto.StockInfo">
         SELECT stock_code AS stockCode, sector FROM stock_info
-        WHERE sector != '금융'
     </select>
 
     <select id="findBySector" resultType="com.ssafy.dartservice.recommendation.dto.StockInfo">

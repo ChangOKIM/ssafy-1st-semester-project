@@ -8,6 +8,6 @@ import java.util.List;
 
 @Mapper
 public interface RecommendationMapper {
-    List<StockInfo> findAll();           // 전체 (금융 제외)
+    List<StockInfo> findAll();           // 전체
     //List<StockInfo> findBySector(@Param("sector") String sector);  // 특정 섹터
 }
