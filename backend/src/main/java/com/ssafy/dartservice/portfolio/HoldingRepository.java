@@ -51,6 +51,25 @@ public interface HoldingRepository {
 		""")
 	Optional<Holding> findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
+	@Select("""
+		SELECT h.id,
+		       h.user_id AS userId,
+		       h.stock_code AS stockCode,
+		       s.stock_name AS stockName,
+		       s.market,
+		       s.sector,
+		       h.quantity,
+		       h.purchase_price AS purchasePrice,
+		       h.purchase_date AS purchaseDate,
+		       h.created_at AS createdAt,
+		       h.updated_at AS updatedAt
+		FROM holdings h
+		JOIN stocks s ON s.stock_code = h.stock_code
+		WHERE h.user_id = #{userId}
+		  AND h.stock_code = #{stockCode}
+		""")
+	Optional<Holding> findByUserIdAndStockCode(@Param("userId") Long userId, @Param("stockCode") String stockCode);
+
 	@Select("SELECT COUNT(*) > 0 FROM stocks WHERE stock_code = #{stockCode}")
 	boolean existsStock(@Param("stockCode") String stockCode);
 

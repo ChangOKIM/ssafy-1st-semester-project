@@ -7,6 +7,8 @@ import { searchStocks } from '../api/stockApi'
 
 const holdings = ref([])
 const diagnosis = ref(null)
+const holdingsLoading = ref(false)
+const diagnosisLoading = ref(false)
 const holdingSaving = ref(false)
 const holdingEditingId = ref(null)
 const holdingMessage = ref('')
@@ -119,10 +121,26 @@ function editHolding(item) {
   holdingMessage.value = ''
 }
 
-async function refreshHoldings() {
-  const [holdingsResult, diagnosisResult] = await Promise.allSettled([getHoldings(), getHoldingDiagnosis()])
-  if (holdingsResult.status === 'fulfilled') holdings.value = unwrap(holdingsResult.value)
-  if (diagnosisResult.status === 'fulfilled') diagnosis.value = unwrap(diagnosisResult.value)
+async function loadHoldings() {
+  holdingsLoading.value = true
+  try {
+    holdings.value = unwrap(await getHoldings())
+  } catch {
+    holdings.value = []
+  } finally {
+    holdingsLoading.value = false
+  }
+}
+
+async function loadDiagnosis() {
+  diagnosisLoading.value = true
+  try {
+    diagnosis.value = unwrap(await getHoldingDiagnosis())
+  } catch {
+    diagnosis.value = null
+  } finally {
+    diagnosisLoading.value = false
+  }
 }
 
 async function saveHolding() {
@@ -149,7 +167,8 @@ async function saveHolding() {
       await createHolding(payload)
       holdingMessage.value = '보유 종목을 추가했습니다.'
     }
-    await refreshHoldings()
+    loadHoldings()
+    loadDiagnosis()
     resetHoldingForm()
   } catch (error) {
     holdingMessage.value = error.response?.data?.error?.message || '보유 종목 저장에 실패했습니다.'
@@ -164,7 +183,8 @@ async function removeHolding(item) {
 
   try {
     await deleteHolding(item.id)
-    await refreshHoldings()
+    loadHoldings()
+    loadDiagnosis()
     if (holdingEditingId.value === item.id) resetHoldingForm()
     holdingMessage.value = '보유 종목을 삭제했습니다.'
   } catch (error) {
@@ -174,7 +194,10 @@ async function removeHolding(item) {
   }
 }
 
-onMounted(refreshHoldings)
+onMounted(() => {
+  loadHoldings()
+  loadDiagnosis()
+})
 </script>
 
 <template>
@@ -185,7 +208,6 @@ onMounted(refreshHoldings)
       <section class="mypage-header">
         <p class="eyebrow">Portfolio</p>
         <h1>투자현황</h1>
-        <p>보유 종목의 매입가, 수량, 현재가 기준 평가금액과 수익률을 관리합니다.</p>
       </section>
 
       <section class="dashboard-grid">
@@ -260,7 +282,9 @@ onMounted(refreshHoldings)
           <p v-if="holdingMessage" class="panel-message">{{ holdingMessage }}</p>
         </form>
 
-        <div v-if="holdings.length" class="holding-table">
+        <div v-if="holdingsLoading" class="panel-message">보유 종목 불러오는 중…</div>
+
+        <div v-else-if="holdings.length" class="holding-table">
           <div class="holding-row holding-head">
             <span>종목</span>
             <span>수량</span>
@@ -286,20 +310,27 @@ onMounted(refreshHoldings)
           </div>
         </div>
         <p v-else class="panel-message">등록된 보유 종목이 없습니다. 종목을 검색해서 매입가와 수량을 추가해 주세요.</p>
+
       </section>
 
       <section class="profile-card analysis-card">
         <h2>AI 투자 진단</h2>
-        <p v-if="diagnosis?.summary">{{ diagnosis.summary }}</p>
-        <div v-if="diagnosis?.sections?.length" class="diagnosis-grid">
-          <article v-for="section in diagnosis.sections" :key="section.title" class="diagnosis-card">
-            <h3>{{ section.title }}</h3>
-            <p>{{ section.content }}</p>
-            <ul v-if="section.guideItems?.length" class="diagnosis-guide">
-              <li v-for="item in section.guideItems" :key="item">{{ item }}</li>
-            </ul>
-          </article>
-        </div>
+
+        <div v-if="diagnosisLoading" class="panel-message">AI 진단 생성 중입니다… 잠시만 기다려 주세요.</div>
+
+        <template v-else-if="diagnosis?.summary || diagnosis?.sections?.length">
+          <p v-if="diagnosis?.summary">{{ diagnosis.summary }}</p>
+          <div v-if="diagnosis?.sections?.length" class="diagnosis-grid">
+            <article v-for="section in diagnosis.sections" :key="section.title" class="diagnosis-card">
+              <h3>{{ section.title }}</h3>
+              <p>{{ section.content }}</p>
+              <ul v-if="section.guideItems?.length" class="diagnosis-guide">
+                <li v-for="item in section.guideItems" :key="item">{{ item }}</li>
+              </ul>
+            </article>
+          </div>
+        </template>
+
         <p v-else class="panel-message">보유 종목을 등록하면 전체 매입금액, 평가금액, 수익률을 요약합니다.</p>
       </section>
     </main>

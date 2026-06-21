@@ -179,6 +179,10 @@ public class StockInitService {
 
     // === 2. 주요종목 financial ===
     public void initFinancials() {
+        if (stockMapper.countFinancials() >= 200 * 3.5) { // 추천 사용 종목은 코스피 200
+            log.info("2. financial 이미 초기화됨 - 스킵");
+            return;
+        }
         int latestYear = LocalDate.now().getYear() - 1;
         List<StockSectorEntry> stocks = loadSectors();
         int success = 0, fail = 0;
@@ -186,7 +190,8 @@ public class StockInitService {
 
         for (StockSectorEntry s : stocks) {
             try {
-                financialService.getFinancials(s.code(), latestYear);
+                financialService.getFinancials(s.code(), latestYear);   // 연간 3년치
+                financialService.getLatestQuarter(s.code());            // 최신 분기 ← 이 줄 추가
                 success++;
                 Thread.sleep(400);
             } catch (Exception e) {

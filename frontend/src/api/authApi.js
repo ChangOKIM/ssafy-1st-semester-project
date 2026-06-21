@@ -11,3 +11,5 @@ export function login(payload) {
 export function checkEmail(email) {
   return api.get('/auth/check-email', { params: { email } })
 }
+
+

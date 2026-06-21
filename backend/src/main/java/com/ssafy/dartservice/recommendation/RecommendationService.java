@@ -4,15 +4,12 @@ import com.ssafy.dartservice.investor.InvestorProfile;
 import com.ssafy.dartservice.investor.InvestorProfileRepository;
 import com.ssafy.dartservice.recommendation.dto.RecommendItem;
 import com.ssafy.dartservice.recommendation.dto.RecommendResponse;
+import com.ssafy.dartservice.recommendation.dto.RecommendSaveDto;
 import com.ssafy.dartservice.recommendation.dto.ScoringInput;
 import com.ssafy.dartservice.recommendation.dto.SectorRecommend;
-import com.ssafy.dartservice.recommendation.dto.StockInfo;
 import com.ssafy.dartservice.recommendation.score.RecommendScorer;
-import com.ssafy.dartservice.stock.FinancialService;
-import com.ssafy.dartservice.stock.dto.FinancialResponseDto;
 import com.ssafy.dartservice.user.User;
 import com.ssafy.dartservice.user.UserRepository;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,7 +26,6 @@ public class RecommendationService {
     private final UserRepository userRepository;
     private final InvestorProfileRepository profileRepository;
     private final RecommendationMapper recommendationMapper;
-    private final FinancialService financialService;
     private final RecommendScorer scorer;
 
     private static final int OVERALL_TOP_N = 10;
@@ -53,73 +49,82 @@ public class RecommendationService {
         List<String> userGoals = splitCsv(profile.getInvestmentGoals());
         String userRisk = profile.getRiskTolerance();
 
-        List<StockInfo> pool = recommendationMapper.findAll();
+        List<RecommendItem> pool = recommendationMapper.findAllWithFinancials();
+        log.info("추천 풀 로드 - 종목 수: {}개 (debtRatio null 제외 후)", pool.size());
+
         List<RecommendItem> allScored = new ArrayList<>();
-        for (StockInfo stock : pool) {
-            RecommendItem item = scoreStock(stock, userSectors, userRisk, userGoals);
-            if (item != null) {
+        for (RecommendItem item : pool) {
+            if (scoreItem(item, userSectors, userRisk, userGoals)) {
                 allScored.add(item);
             }
         }
+        log.info("점수 계산 완료 - 성공: {}개 / 전체: {}개", allScored.size(), pool.size());
 
-        allScored.sort(Comparator.comparingDouble(RecommendItem::score).reversed());
+        allScored.sort(Comparator.comparingDouble(RecommendItem::getScore).reversed());
 
         List<RecommendItem> overall = allScored.stream()
                 .limit(OVERALL_TOP_N)
                 .toList();
+        log.info("전체 TOP{}: {}", OVERALL_TOP_N,
+                overall.stream().map(i -> i.getStockCode() + "(" + String.format("%.1f", i.getScore()) + ")").toList());
 
         List<SectorRecommend> bySector = new ArrayList<>();
         for (String sector : userSectors) {
             List<RecommendItem> top3 = allScored.stream()
-                    .filter(item -> sector.equals(item.sector()))
+                    .filter(item -> sector.equals(item.getSector()))
                     .limit(SECTOR_TOP_N)
                     .toList();
             if (!top3.isEmpty()) {
                 bySector.add(new SectorRecommend(sector, top3));
+                log.info("섹터 [{}] TOP{}: {}", sector, SECTOR_TOP_N,
+                        top3.stream().map(i -> i.getStockCode() + "(" + String.format("%.1f", i.getScore()) + ")").toList());
+            } else {
+                log.info("섹터 [{}] 해당 종목 없음", sector);
             }
         }
+
+        saveRecommendations(user.getId(), overall, bySector);
 
         return new RecommendResponse(overall, bySector);
     }
 
-    private RecommendItem scoreStock(
-            StockInfo stock,
-            List<String> userSectors,
-            String userRisk,
-            List<String> userGoals
-    ) {
+    private boolean scoreItem(RecommendItem item, List<String> userSectors, String userRisk, List<String> userGoals) {
         try {
-            int latestYear = LocalDate.now().getYear() - 1;
-            FinancialResponseDto fin = latestFinancial(stock.getStockCode(), latestYear);
-            if (fin == null) {
-                return null;
-            }
-
             ScoringInput input = new ScoringInput(
-                    stock.getStockCode(),
-                    stock.getSector(),
-                    fin.getDebtRatio(),
-                    fin.getInterestCoverage(),
-                    fin.getCurrentRatio(),
-                    fin.getRoe(),
-                    fin.getOperatingMargin(),
+                    item.getStockCode(),
+                    item.getSector(),
+                    item.getDebtRatio(),
+                    item.getInterestCoverage(),
+                    item.getCurrentRatio(),
+                    item.getRoe(),
+                    item.getOperatingMargin(),
                     userSectors,
                     userRisk,
                     userGoals
             );
-            double score = scorer.score(input);
-            return new RecommendItem(stock.getStockCode(), stock.getSector(), score);
+            item.setScore(scorer.score(input));
+            return true;
         } catch (Exception e) {
-            log.warn("추천 점수 계산 실패 - {}: {}", stock.getStockCode(), e.getMessage());
-            return null;
+            log.warn("추천 점수 계산 실패 - {}: {}", item.getStockCode(), e.getMessage());
+            return false;
         }
     }
 
-    private FinancialResponseDto latestFinancial(String code, int year) {
-        List<FinancialResponseDto> list = financialService.getFinancials(code, year);
-        return list.stream()
-                .max(Comparator.comparingInt(FinancialResponseDto::getBaseYear))
-                .orElse(null);
+    private void saveRecommendations(Long userId, List<RecommendItem> overall, List<SectorRecommend> bySector) {
+        List<RecommendSaveDto> saves = new ArrayList<>();
+        for (RecommendItem item : overall) {
+            saves.add(new RecommendSaveDto(userId, item.getStockCode(), "OVERALL", item.getScore()));
+        }
+        for (SectorRecommend sr : bySector) {
+            for (RecommendItem item : sr.items()) {
+                saves.add(new RecommendSaveDto(userId, item.getStockCode(), "SECTOR", item.getScore()));
+            }
+        }
+        if (!saves.isEmpty()) {
+            recommendationMapper.deleteByUserId(userId);
+            recommendationMapper.insertRecommendations(saves);
+            log.info("추천 저장 완료 - userId: {}, {}건", userId, saves.size());
+        }
     }
 
     private List<String> splitCsv(String csv) {

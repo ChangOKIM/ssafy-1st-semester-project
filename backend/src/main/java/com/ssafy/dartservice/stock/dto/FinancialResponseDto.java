@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Builder
 public class FinancialResponseDto {
     private int baseYear;
+    private String periodCode;
     private Long revenue;
     private Long operatingProfit;
     private Long netIncome;
@@ -23,6 +24,7 @@ public class FinancialResponseDto {
     public static FinancialResponseDto from(StockFinancial f) {
         return FinancialResponseDto.builder()
                 .baseYear(f.getBaseYear())
+                .periodCode(f.getPeriodCode())
                 .revenue(f.getRevenue())
                 .operatingProfit(f.getOperatingProfit())
                 .netIncome(f.getNetIncome())

@@ -23,18 +23,25 @@
         WHERE stock_code = #{stockCode} AND base_year = #{baseYear}
     </select>
 
+    <select id="findFinancialByPeriod" resultType="com.ssafy.dartservice.stock.dart.StockFinancial">
+        SELECT * FROM stock_financials
+        WHERE stock_code = #{stockCode}
+          AND base_year = #{baseYear}
+          AND period_code = #{periodCode}
+    </select>
+
     <select id="findCorpCode" resultType="string">
         SELECT corp_code FROM stocks WHERE stock_code = #{stockCode}
     </select>
 
     <insert id="insertFinancial" parameterType="com.ssafy.dartservice.stock.dart.StockFinancial">
         INSERT INTO stock_financials
-        (stock_code, base_year, revenue, operating_profit, net_income,
+        (stock_code, base_year, period_code, revenue, operating_profit, net_income,
          total_assets, total_debt, total_equity, current_assets, current_liabilities,
          finance_costs, operating_cash_flow,
          debt_ratio, operating_margin, roe, current_ratio, interest_coverage)
         VALUES
-            (#{stockCode}, #{baseYear}, #{revenue}, #{operatingProfit}, #{netIncome},
+            (#{stockCode}, #{baseYear}, #{periodCode}, #{revenue}, #{operatingProfit}, #{netIncome},
              #{totalAssets}, #{totalDebt}, #{totalEquity}, #{currentAssets}, #{currentLiabilities},
              #{financeCosts}, #{operatingCashFlow},
              #{debtRatio}, #{operatingMargin}, #{roe}, #{currentRatio}, #{interestCoverage})
@@ -47,6 +54,19 @@
                                  debt_ratio=VALUES(debt_ratio), operating_margin=VALUES(operating_margin),
                                  roe=VALUES(roe), current_ratio=VALUES(current_ratio),
                                  interest_coverage=VALUES(interest_coverage)
+    </insert>
+
+    <select id="findCachedReport" resultType="string">
+        SELECT content FROM stock_reports
+        WHERE stock_code = #{stockCode}
+          AND DATE(generated_at) = CURDATE()
+        ORDER BY generated_at DESC
+        LIMIT 1
+    </select>
+
+    <insert id="saveReport">
+        INSERT INTO stock_reports (stock_code, content)
+        VALUES (#{stockCode}, #{content})
     </insert>
 
 </mapper>

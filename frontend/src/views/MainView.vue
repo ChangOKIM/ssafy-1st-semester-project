@@ -14,7 +14,6 @@ const searchResults = ref([])
 const searchLoading = ref(false)
 const searchMessage = ref('')
 const overallRecommendations = ref([])
-const sectorRecommendations = ref([])
 const recommendationMessage = ref('')
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
@@ -47,7 +46,22 @@ function stockCode(stock) {
 }
 
 function recommendationName(item) {
-  return item.stockName || item.name || item.stock_code || item.stockCode || '추천 종목'
+  return item.stockName || item.name || item.stockCode || item.stock_code || '추천 종목'
+}
+
+// TODO: API 연동 — 인기 종목 실시간 데이터 연동 필요
+const POPULAR_STOCKS = [
+  { name: '삼성전자', code: '005930' },
+  { name: 'SK하이닉스', code: '000660' },
+  { name: '카카오', code: '035720' },
+  { name: 'NAVER', code: '035420' },
+  { name: '현대자동차', code: '005380' },
+]
+
+// TODO: API 연동 — 추천 종목 실시간 등락 데이터 연동 필요
+const DUMMY_CHANGES = [+1.23, -0.87, +2.10, -1.45, +0.67, +3.21, -2.34, +0.92, -0.56, +1.78]
+function getItemChange(index) {
+  return DUMMY_CHANGES[index] ?? 0
 }
 
 async function submitSearch() {
@@ -86,20 +100,17 @@ function goToRecommendations() {
 
 async function loadRecommendations() {
   if (!isLoggedIn.value) {
-    recommendationMessage.value = '로그인하면 맞춤 추천 TOP 10과 관심 분야 TOP 3를 볼 수 있습니다.'
+    recommendationMessage.value = '로그인하면 맞춤 추천 TOP 10을 볼 수 있습니다.'
     return
   }
 
   try {
-    const [overall, sector] = await Promise.allSettled([
-      getRecommendations(),
-      getRecommendations('IT'),
-    ])
+    const res = await getRecommendations()
+    const data = res?.data ?? {}
 
-    overallRecommendations.value = overall.status === 'fulfilled' ? unwrap(overall.value).slice(0, 10) : []
-    sectorRecommendations.value = sector.status === 'fulfilled' ? unwrap(sector.value).slice(0, 3) : []
+    overallRecommendations.value = (data.overall ?? []).slice(0, 10)
 
-    if (overallRecommendations.value.length === 0 && sectorRecommendations.value.length === 0) {
+    if (overallRecommendations.value.length === 0) {
       recommendationMessage.value = '추천 데이터가 아직 없습니다. 투자 성향을 먼저 등록해 주세요.'
     }
   } catch (error) {
@@ -118,9 +129,9 @@ onMounted(loadRecommendations)
       <section class="hero-section">
         <div class="hero-copy">
           <p class="eyebrow">AI stock navigator</p>
-          <h1>공시와 투자 성향을 한 화면에서 연결합니다.</h1>
+          <h1>어려운 기업 공시, 3분이면 끝</h1>
           <p>
-            종목 검색, AI 추천, 보유 종목 현황, 마이페이지의 투자 성향을 명세서 API 흐름에 맞춰 제공합니다.
+            궁금한 종목을 검색하면 가격·재무·공시를 AI가 쉬운 말로 정리해드려요. 
           </p>
 
           <form class="stock-search" @submit.prevent="submitSearch">
@@ -128,9 +139,24 @@ onMounted(loadRecommendations)
             <button type="submit">{{ searchLoading ? '검색 중' : '검색' }}</button>
           </form>
 
+          <!-- TODO: API 연동 — 인기 종목 실시간 데이터 연동 필요 -->
+          <div class="popular-chips">
+            <span class="popular-label">인기 종목</span>
+            <button
+              v-for="stock in POPULAR_STOCKS"
+              :key="stock.code"
+              type="button"
+              class="popular-chip"
+              @click="router.push('/report/' + stock.code)"
+            >
+              {{ stock.name }}
+            </button>
+          </div>
+
           <div v-if="searchResults.length || searchMessage" class="search-panel">
             <p v-if="searchMessage" class="panel-message">{{ searchMessage }}</p>
-            <button v-for="stock in searchResults" :key="stockCode(stock)" type="button" class="search-result">
+            <button v-for="stock in searchResults" :key="stockCode(stock)" type="button" class="search-result"
+              @click="router.push('/report/' + stockCode(stock))">
               <strong>{{ stockName(stock) }}</strong>
               <span>{{ stockCode(stock) }}</span>
             </button>
@@ -139,37 +165,35 @@ onMounted(loadRecommendations)
 
         <aside class="recommendation-summary">
           <div class="summary-header">
-            <span>AI 투자성향 요약</span>
-            <button type="button" @click="goToRecommendations">리포트 보기</button>
+            <span>나의 AI 추천 종목 TOP 10</span>
+            <!-- <button type="button" @click="goToRecommendations">리포트 보기</button> -->
           </div>
 
-          <div class="ranking-grid">
-            <section>
-              <h2>섹터 추천 TOP 3</h2>
-              <ol>
-                <li v-for="item in sectorRecommendations" :key="recommendationName(item)">
-                  <span>{{ recommendationName(item) }}</span>
-                  <b>{{ item.score ?? '-' }}</b>
-                </li>
-              </ol>
-            </section>
-
-            <section>
-              <h2>종합 추천 TOP 10</h2>
-              <ol>
-                <li v-for="item in overallRecommendations" :key="recommendationName(item)">
-                  <span>{{ recommendationName(item) }}</span>
-                  <b>{{ item.score ?? '-' }}</b>
-                </li>
-              </ol>
-            </section>
+          <div class="rec-list">
+            <p v-if="!overallRecommendations.length && !recommendationMessage" class="panel-message">추천 데이터가 없습니다.</p>
+            <button
+              v-for="(item, index) in overallRecommendations"
+              :key="recommendationName(item)"
+              type="button"
+              class="rec-item"
+              @click="router.push('/report/' + item.stockCode)"
+            >
+              <em class="rec-rank">{{ index + 1 }}</em>
+              <strong class="rec-name">{{ recommendationName(item) }} <span class="rec-code">({{ item.stockCode }})</span></strong>
+              <!-- TODO: API 연동 — 실시간 등락 데이터 연동 필요 -->
+              <span
+                class="rec-change"
+                :class="getItemChange(index) >= 0 ? 'positive' : 'negative'"
+              >{{ getItemChange(index) >= 0 ? '▲' : '▼' }}{{ Math.abs(getItemChange(index)).toFixed(2) }}%</span>
+              <b class="rec-score">{{ item.score != null ? Math.round(item.score) : '-' }}<small v-if="item.score != null" class="rec-score-unit">점</small></b>
+            </button>
           </div>
 
           <p v-if="recommendationMessage" class="panel-message">{{ recommendationMessage }}</p>
         </aside>
       </section>
 
-      <section class="service-section">
+      <!-- <section class="service-section">
         <div class="section-title">
           <p class="eyebrow">Service</p>
           <h2>초보 투자자가 바로 쓰는 핵심 흐름</h2>
@@ -181,7 +205,7 @@ onMounted(loadRecommendations)
             <p>{{ card.description }}</p>
           </article>
         </div>
-      </section>
+      </section> -->
     </main>
 
     <AppFooter />

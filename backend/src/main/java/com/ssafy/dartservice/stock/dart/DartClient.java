@@ -20,14 +20,13 @@ public class DartClient {
     private static final String URL =
         "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json";
 
-    public DartFinancialResponse fetch(String corpCode, int year) {
-        log.info("DART 재무 API 호출 - corpCode: {}, year: {}", corpCode, year);
+    public DartFinancialResponse fetch(String corpCode, int year, String periodCode, String fsDiv) {
         String url = UriComponentsBuilder.fromHttpUrl(URL)
                 .queryParam("crtfc_key", apiKey)
                 .queryParam("corp_code", corpCode)
                 .queryParam("bsns_year", year)
-                .queryParam("reprt_code", "11011")
-                .queryParam("fs_div", "CFS")
+                .queryParam("reprt_code", periodCode)
+                .queryParam("fs_div", fsDiv)
                 .toUriString();
         DartFinancialResponse result = restTemplate.getForObject(url, DartFinancialResponse.class);
         log.info("DART 재무 API 응답 - status: {}", result != null ? result.getStatus() : "null");

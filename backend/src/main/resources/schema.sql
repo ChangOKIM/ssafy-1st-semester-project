@@ -53,38 +53,38 @@ CREATE TABLE IF NOT EXISTS stock_info (
     PRIMARY KEY (stock_code)
     );
 
-
--- 4. stock_financials (종목 상세)
+-- 4. stock_financials (종목 재무)
 CREATE TABLE IF NOT EXISTS stock_financials (
-      id                  BIGINT       NOT NULL AUTO_INCREMENT,
-      stock_code          VARCHAR(10)  NOT NULL,
-      base_year           YEAR         NOT NULL,
+                                                id                  BIGINT       NOT NULL AUTO_INCREMENT,
+                                                stock_code          VARCHAR(10)  NOT NULL,
+    period_code         VARCHAR(5)   NOT NULL DEFAULT '11011',  -- 11011=사업(연간), 11014=3분기, 11012=반기, 11013=1분기
+    base_year           YEAR         NOT NULL,
 
 -- DART 원자료 (금액)
-      revenue             BIGINT,                -- 매출액
-      operating_profit    BIGINT,                -- 영업이익
-      net_income          BIGINT,                -- 당기순이익
-      total_assets        BIGINT,                -- 자산총계
-      total_debt          BIGINT,                -- 부채총계
-      total_equity        BIGINT,                -- 자본총계 (ROE·부채비율 분모)
-      current_assets      BIGINT,                -- 유동자산
-      current_liabilities BIGINT,                -- 유동부채
-      finance_costs       BIGINT,                -- 금융비용 (이자보상배율 분모)
-      operating_cash_flow BIGINT,                -- 영업활동현금흐름
+    revenue             BIGINT,                -- 매출액
+    operating_profit    BIGINT,                -- 영업이익
+    net_income          BIGINT,                -- 당기순이익
+    total_assets        BIGINT,                -- 자산총계
+    total_debt          BIGINT,                -- 부채총계
+    total_equity        BIGINT,                -- 자본총계 (ROE·부채비율 분모)
+    current_assets      BIGINT,                -- 유동자산
+    current_liabilities BIGINT,                -- 유동부채
+    finance_costs       BIGINT,                -- 금융비용 (이자보상배율 분모)
+    operating_cash_flow BIGINT,                -- 영업활동현금흐름
 
 -- 계산된 비율 (저장 시점에 계산)
-      debt_ratio          DECIMAL(6, 2),         -- 부채비율 %
-      operating_margin    DECIMAL(6, 2),         -- 영업이익률 %
-      roe                 DECIMAL(6, 2),         -- ROE %
-      current_ratio       DECIMAL(8, 2),         -- 유동비율 %
-      interest_coverage   DECIMAL(8, 2),         -- 이자보상배율 (배)
+    debt_ratio          DECIMAL(6, 2),         -- 부채비율 %
+    operating_margin    DECIMAL(6, 2),         -- 영업이익률 %
+    roe                 DECIMAL(6, 2),         -- ROE %
+    current_ratio       DECIMAL(8, 2),         -- 유동비율 %
+    interest_coverage   DECIMAL(8, 2),         -- 이자보상배율 (배)
 
-      fetched_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fetched_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-      PRIMARY KEY (id),
-      UNIQUE KEY uk_financials_code_year (stock_code, base_year),
-      CONSTRAINT fk_financials_stock FOREIGN KEY (stock_code) REFERENCES stocks (stock_code) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_financials_code_year_period (stock_code, base_year, period_code),
+    CONSTRAINT fk_financials_stock FOREIGN KEY (stock_code) REFERENCES stocks (stock_code) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. stock_reports (종목리포트)
 CREATE TABLE IF NOT EXISTS stock_reports (

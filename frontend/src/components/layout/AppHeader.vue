@@ -17,13 +17,13 @@ function logout() {
   <header class="app-header">
     <div class="app-header-inner">
       <RouterLink class="brand" to="/">
-        <span class="brand-mark">D</span>
-        <span>DartPoint AI</span>
+        <img src="/logo.svg" alt="DartPoint AI" class="brand-logo" />
+        <span>주린이 안경</span>
       </RouterLink>
 
       <nav class="main-nav" aria-label="주요 메뉴">
         <RouterLink to="/">홈</RouterLink>
-        <RouterLink to="/recommendations">AI 추천</RouterLink>
+        <RouterLink v-if="isLoggedIn" to="/recommendations">AI 추천</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/holdings">투자현황</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/mypage">투자성향</RouterLink>
       </nav>

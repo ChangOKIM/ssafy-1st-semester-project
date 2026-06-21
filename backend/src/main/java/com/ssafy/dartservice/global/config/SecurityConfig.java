@@ -42,7 +42,8 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/health", "/auth/signup", "/auth/login", "/auth/check-email").permitAll()
 				.requestMatchers("/stocks/**").permitAll() //, "/stocks/{code}/chart", "/stocks/{code}/financial", /stocks/{code}/price
 				.requestMatchers("/reports/**").permitAll()
-.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+				//.requestMatchers("/recommendations/**", ).permitAll()
+				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 				.anyRequest().authenticated()
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

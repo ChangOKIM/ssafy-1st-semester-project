@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 public class StockFinancial {
     private Long id;
     private String stockCode;
+    private String periodCode;   // 11011=연간, 11014=3분기, 11012=반기, 11013=1분기
     private int baseYear;
     private Long revenue;
     private Long operatingProfit;

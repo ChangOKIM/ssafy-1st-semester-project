@@ -113,7 +113,6 @@ onMounted(loadProfile)
       <section class="mypage-header">
         <p class="eyebrow">Investment Profile</p>
         <h1>투자성향</h1>
-        <p>추천 시스템에 사용할 투자 경험, 위험 감수 성향, 투자 목표와 관심 분야를 관리합니다.</p>
       </section>
 
       <section class="profile-card wide-card">

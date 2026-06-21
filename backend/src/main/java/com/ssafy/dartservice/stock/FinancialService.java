@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,21 +25,27 @@ public class FinancialService {
     private final ReportMapper reportMapper;
     private final DartClient dartClient;
 
+    private static final String ANNUAL = "11011";                        // 사업보고서
+    private static final String[] QUARTERS = {"11014", "11012", "11013"}; // 3분기→반기→1분기
+    private static final String FS_DIV = "CFS";                           // 연결재무제표
+
+    // ===== 연간 3년치 =====
     public List<FinancialResponseDto> getFinancials(String stockCode, int latestYear) {
-        log.info("재무 데이터 조회 요청 - stockCode: {}, latestYear: {}", stockCode, latestYear);
+        log.info("재무(연간) 조회 - stockCode: {}, latestYear: {}", stockCode, latestYear);
+
         List<StockFinancial> cached = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            StockFinancial c = reportMapper.findFinancial(stockCode, latestYear - i);
+            StockFinancial c = reportMapper.findFinancialByPeriod(stockCode, latestYear - i, ANNUAL);
             if (c != null) cached.add(c);
         }
         if (cached.size() == 3) {
-            log.info("재무 데이터 캐시 히트 - stockCode: {}", stockCode);
+            log.info("연간 캐시 히트 - stockCode: {}", stockCode);
             return cached.stream().map(FinancialResponseDto::from).toList();
         }
 
         String corpCode = reportMapper.findCorpCode(stockCode);
-        log.info("재무 데이터 캐시 미스 - DART API 호출 - stockCode: {}, corpCode: {}", stockCode, corpCode);
-        DartFinancialResponse res = dartClient.fetch(corpCode, latestYear);
+        log.info("연간 캐시 미스 - DART 호출 - stockCode: {}, corpCode: {}", stockCode, corpCode);
+        DartFinancialResponse res = dartClient.fetch(corpCode, latestYear, ANNUAL, FS_DIV);
         if (res == null || !"000".equals(res.getStatus())) {
             log.error("DART 응답 오류 - stockCode: {}, status: {}", stockCode, res != null ? res.getStatus() : "null");
             throw new IllegalStateException("DART 응답 오류");
@@ -53,9 +60,6 @@ public class FinancialService {
             putIfValid(frmtrm, key, item.getFrmtrmAmount());
             putIfValid(bfefrmtrm, key, item.getBfefrmtrmAmount());
         }
-        thstrm.entrySet().stream()
-                .filter(e -> e.getKey().startsWith("IS:") || e.getKey().startsWith("CIS:"))
-                .forEach(e -> log.info("{} = {}", e.getKey(), e.getValue()));
 
         List<StockFinancial> all = List.of(
                 build(stockCode, latestYear,     thstrm),
@@ -63,9 +67,48 @@ public class FinancialService {
                 build(stockCode, latestYear - 2, bfefrmtrm)
         );
         for (StockFinancial f : all) reportMapper.insertFinancial(f);
-        log.info("재무 데이터 저장 완료 - stockCode: {}, {}년~{}년", stockCode, latestYear - 2, latestYear);
+        log.info("연간 저장 완료 - stockCode: {}, {}~{}", stockCode, latestYear - 2, latestYear);
 
         return all.stream().map(FinancialResponseDto::from).toList();
+    }
+
+    // ===== 최신 분기 1건 (폴백) =====
+    public FinancialResponseDto getLatestQuarter(String stockCode) {
+        int thisYear = LocalDate.now().getYear();
+        log.info("재무(분기) 조회 - stockCode: {}, year: {}", stockCode, thisYear);
+
+        // 1) 캐시: 최신 분기부터 확인
+        for (String code : QUARTERS) {
+            StockFinancial c = reportMapper.findFinancialByPeriod(stockCode, thisYear, code);
+            if (c != null) {
+                log.info("분기 캐시 히트 - stockCode: {}, periodCode: {}", stockCode, code);
+                return FinancialResponseDto.from(c);
+            }
+        }
+
+        // 2) 캐시 미스: 최신 분기부터 호출, 첫 성공 채택
+        String corpCode = reportMapper.findCorpCode(stockCode);
+        for (String code : QUARTERS) {
+            DartFinancialResponse res = dartClient.fetch(corpCode, thisYear, code, FS_DIV);
+            if (res == null || !"000".equals(res.getStatus())) {
+                log.info("분기 미공시 - stockCode: {}, periodCode: {}, status: {}",
+                        stockCode, code, res != null ? res.getStatus() : "null");
+                continue; // 013 등 → 다음 후보
+            }
+
+            Map<String, Long> thstrm = new HashMap<>(); // 분기는 당기(thstrm)만 사용
+            for (DartFinancialResponse.Item item : res.getList()) {
+                putIfValid(thstrm, item.getSjDiv() + ":" + item.getAccountId(), item.getThstrmAmount());
+            }
+
+            StockFinancial f = build(stockCode, thisYear, code, thstrm);
+            reportMapper.insertFinancial(f);
+            log.info("분기 채택·저장 - stockCode: {}, periodCode: {}", stockCode, code);
+            return FinancialResponseDto.from(f);
+        }
+
+        log.info("올해 분기 공시 없음 - stockCode: {} (연간만 사용)", stockCode);
+        return null; // 분기 없으면 연간만 사용
     }
 
     private void putIfValid(Map<String, Long> map, String key, String raw) {
@@ -73,10 +116,17 @@ public class FinancialService {
         if (v != null) map.put(key, v);
     }
 
+    // 기존 3-arg → 연간(11011)으로 위임
     private StockFinancial build(String stockCode, int year, Map<String, Long> amt) {
+        return build(stockCode, year, ANNUAL, amt);
+    }
+
+    // periodCode 받는 본체
+    private StockFinancial build(String stockCode, int year, String periodCode, Map<String, Long> amt) {
         StockFinancial f = new StockFinancial();
         f.setStockCode(stockCode);
         f.setBaseYear(year);
+        f.setPeriodCode(periodCode);   // ← report_code → period_code
         f.setRevenue(         getAmount(amt, "ifrs-full_Revenue",          "IS", "CIS"));
         f.setOperatingProfit( getAmount(amt, "dart_OperatingIncomeLoss",   "IS", "CIS"));
         f.setNetIncome(       getAmount(amt, "ifrs-full_ProfitLoss",       "IS", "CIS"));

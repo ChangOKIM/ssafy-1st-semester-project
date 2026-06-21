@@ -15,4 +15,10 @@ public interface ReportMapper {
     StockFinancial findFinancial(@Param("stockCode") String stockCode, @Param("baseYear") int baseYear);
     void insertFinancial(StockFinancial financial);
     String findCorpCode(@Param("stockCode") String stockCode);
+    StockFinancial findFinancialByPeriod(@Param("stockCode") String stockCode,
+                                         @Param("baseYear") int baseYear,
+                                         @Param("periodCode") String periodCode);
+
+    String findCachedReport(@Param("stockCode") String stockCode);
+    void saveReport(@Param("stockCode") String stockCode, @Param("content") String content);
 }

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 public interface StockMapper {
 
     int countStocks();
+    int countFinancials();
 
     void insertStock(@Param("stockCode") String stockCode,
                      @Param("corpCode") String corpCode,

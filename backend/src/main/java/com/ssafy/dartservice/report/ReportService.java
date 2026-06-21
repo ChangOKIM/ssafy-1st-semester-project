@@ -56,29 +56,59 @@ public class ReportService {
     }
 
     public String getReport(String stockCode, int latestYear) {
+        String cached = reportMapper.findCachedReport(stockCode);
+        if (cached != null) {
+            log.info("AI 리포트 캐시 히트 - stockCode: {}", stockCode);
+            return cached;
+        }
         log.info("AI 리포트 생성 요청 - stockCode: {}", stockCode);
 
         List<FinancialResponseDto> financials = financialService.getFinancials(stockCode, latestYear);
+        FinancialResponseDto quarter = financialService.getLatestQuarter(stockCode); // null 가능
         var price = stockService.getStockPrice(stockCode);
 
         StockSearchResponseDto stock = reportMapper.findById(stockCode);
         String companyName = stock.getStockName();
 
+        // 분기 → LatestQuarter (없으면 null)
+        ReportInput.LatestQuarter latestQuarter = (quarter == null) ? null
+                : new ReportInput.LatestQuarter(
+                quarterLabel(quarter.getBaseYear(), quarter.getPeriodCode()),
+                toReadableWon(quarter.getRevenue()),
+                toReadableWon(quarter.getOperatingProfit()),
+                quarter.getOperatingMargin(),
+                quarter.getDebtRatio()
+        );
+
         ReportInput input = new ReportInput(
                 companyName,
                 financials.stream().map(f -> new ReportInput.FinancialYear(
                         f.getBaseYear(),
-                        toReadableWon(f.getRevenue()),          // 변환 적용
-                        toReadableWon(f.getOperatingProfit()),  // 변환 적용
+                        toReadableWon(f.getRevenue()),
+                        toReadableWon(f.getOperatingProfit()),
                         f.getOperatingMargin(),
                         f.getDebtRatio(),
                         f.getInterestCoverage()
                 )).toList(),
+                latestQuarter,
                 price.getCurrentPrice(),
                 price.getPer(),
                 price.getPbr()
         );
 
-        return reportLlmService.generateReport(input);
+        String report = reportLlmService.generateReport(input);
+        reportMapper.saveReport(stockCode, report);
+        log.info("AI 리포트 저장 완료 - stockCode: {}", stockCode);
+        return report;
+    }
+
+    private String quarterLabel(int year, String periodCode) {
+        String q = switch (periodCode) {
+            case "11013" -> "1분기 누적";
+            case "11012" -> "반기 누적";
+            case "11014" -> "3분기 누적";
+            default      -> "분기";
+        };
+        return year + "년 " + q;
     }
 }

@@ -14,6 +14,8 @@ import com.ssafy.dartservice.user.User;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,8 +34,14 @@ public class HoldingService {
 	@Transactional(readOnly = true)
 	public List<HoldingResponse> getHoldings(User user) {
 		validateUser(user);
-		return holdingRepository.findAllByUserId(user.getId()).stream()
-			.map(this::toResponse)
+		List<Holding> holdings = holdingRepository.findAllByUserId(user.getId());
+
+		List<CompletableFuture<HoldingResponse>> futures = holdings.stream()
+			.map(h -> CompletableFuture.supplyAsync(() -> toResponse(h)))
+			.toList();
+
+		return futures.stream()
+			.map(CompletableFuture::join)
 			.toList();
 	}
 
@@ -41,6 +49,26 @@ public class HoldingService {
 	public HoldingResponse createHolding(User user, HoldingRequest request) {
 		validateUser(user);
 		validateStock(request.stockCode());
+
+		Optional<Holding> existing = holdingRepository.findByUserIdAndStockCode(
+			user.getId(), request.stockCode().trim());
+
+		if (existing.isPresent()) {
+			Holding old = existing.get();
+			int newQty = old.getQuantity() + request.quantity();
+			BigDecimal weightedPrice = old.getPurchasePrice()
+				.multiply(BigDecimal.valueOf(old.getQuantity()))
+				.add(request.purchasePrice().multiply(BigDecimal.valueOf(request.quantity())))
+				.divide(BigDecimal.valueOf(newQty), 0, RoundingMode.HALF_UP);
+
+			old.setQuantity(newQty);
+			old.setPurchasePrice(weightedPrice);
+			holdingRepository.update(old);
+
+			return holdingRepository.findByIdAndUserId(old.getId(), user.getId())
+				.map(this::toResponse)
+				.orElseThrow(() -> new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR));
+		}
 
 		Holding holding = new Holding();
 		holding.setUserId(user.getId());
