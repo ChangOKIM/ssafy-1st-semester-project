@@ -12,4 +12,5 @@ public class StockSearchResponseDto {
     private String corpCode;
     private String stockName;
     private String market;
+    private String sector;
 }

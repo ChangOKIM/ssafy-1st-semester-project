@@ -23,6 +23,8 @@ public class ReportService {
     private final FinancialService financialService;
     private final ReportLlmService reportLlmService;
     private final StockService stockService;
+    private final SectorGuide sectorGuide;
+
 
     public List<StockSearchResponseDto> searchStocks(String keyword) {
         log.info("종목 검색 요청 - keyword: {}", keyword);
@@ -69,6 +71,8 @@ public class ReportService {
 
         StockSearchResponseDto stock = reportMapper.findById(stockCode);
         String companyName = stock.getStockName();
+        String guide = sectorGuide.get(stock.getSector());
+
 
         // 분기 → LatestQuarter (없으면 null)
         ReportInput.LatestQuarter latestQuarter = (quarter == null) ? null
@@ -82,6 +86,7 @@ public class ReportService {
 
         ReportInput input = new ReportInput(
                 companyName,
+                guide,
                 financials.stream().map(f -> new ReportInput.FinancialYear(
                         f.getBaseYear(),
                         toReadableWon(f.getRevenue()),

@@ -32,7 +32,7 @@ public class KisTokenService {
     private String cachedToken;
     private LocalDateTime tokenExpiredAt;
 
-    public String getAccessToken() {
+    public synchronized String getAccessToken() {
         if (cachedToken != null && tokenExpiredAt != null
                 && LocalDateTime.now().isBefore(tokenExpiredAt.minusHours(1))) {
             log.info("캐시된 KIS 토큰 사용");
