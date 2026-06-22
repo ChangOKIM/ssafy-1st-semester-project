@@ -14,7 +14,7 @@ const form = reactive({
   riskTolerance: 'MEDIUM',
   investmentGoal: 'STABLE_GROWTH',
   investableAmount: 1000000,
-  preferredSectors: ['IT'],
+  preferredSectors: ['IT·소프트웨어'],
 })
 
 const experienceOptions = [
@@ -37,7 +37,20 @@ const goalOptions = [
   { value: 'LONG_TERM', label: '장기 투자' },
 ]
 
-const sectorOptions = ['IT', '반도체', '금융', '자동차', '바이오', '2차전지', '플랫폼']
+const sectorOptions = [
+  'IT·소프트웨어',
+  '반도체',
+  '금융',
+  '자동차·모빌리티',
+  '바이오·헬스케어',
+  '2차전지·에너지',
+  '플랫폼·인터넷',
+  '소비재',
+  '엔터테인먼트',
+  '산업재·조선·방산',
+  '소재·화학·철강',
+  '유틸리티',
+]
 const canSubmit = computed(() => form.preferredSectors.length > 0 && Number(form.investableAmount) >= 0)
 
 function toggleSector(sector) {

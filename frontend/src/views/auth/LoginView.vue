@@ -12,6 +12,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const loading = ref(false)
 const serverError = ref('')
+const isExpired = route.query.expired === 'true'
 const form = reactive({
   email: '',
   password: '',
@@ -40,11 +41,10 @@ async function submit() {
     <AppHeader />
 
     <main class="auth-page">
-      <section class="auth-copy">
+      <!-- <section class="auth-copy">
         <p class="eyebrow">Login</p>
-        <h1>내 투자 성향과 추천 리포트를 이어서 확인하세요.</h1>
-        <p>로그인하면 마이페이지, AI 추천, 보유 종목 현황 API를 인증 토큰과 함께 사용할 수 있습니다.</p>
-      </section>
+        <h1>내 종목 리포트와 맞춤 종목을 확인하세요.</h1>
+      </section> -->
 
       <form class="auth-card" @submit.prevent="submit">
         <div>
@@ -55,6 +55,7 @@ async function submit() {
         <BaseInput id="email" v-model="form.email" label="이메일" type="email" autocomplete="email" />
         <BaseInput id="password" v-model="form.password" label="비밀번호" type="password" autocomplete="current-password" />
 
+        <p v-if="isExpired" class="form-error">세션이 만료됐습니다. 다시 로그인해 주세요.</p>
         <p v-if="serverError" class="form-error">{{ serverError }}</p>
 
         <BaseButton type="submit" :disabled="loading">{{ loading ? '로그인 중' : '로그인' }}</BaseButton>

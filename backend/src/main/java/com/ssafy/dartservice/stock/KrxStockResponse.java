@@ -23,5 +23,8 @@ public class KrxStockResponse {
 
         @JsonProperty("SECT_TP_NM")
         private String sectTpNm;    // 소속부 (업종)
+
+        @JsonProperty("KIND_STKCERT_TP_NM")
+        private String kindStkcertTpNm;   // 주식종류 (보통주/우선주)
     }
 }

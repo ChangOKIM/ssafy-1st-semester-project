@@ -37,5 +37,17 @@ public class KisPriceResponse {
 
         @JsonProperty("w52_lwpr")
         private String w52Lwpr;           // 52주 최저가
+
+        @JsonProperty("per")
+        private String per;          // PER
+
+        @JsonProperty("pbr")
+        private String pbr;          // PBR
+
+        @JsonProperty("eps")
+        private String eps;          // EPS (주당순이익)
+
+        @JsonProperty("bps")
+        private String bps;          // BPS (주당순자산)
     }
 }

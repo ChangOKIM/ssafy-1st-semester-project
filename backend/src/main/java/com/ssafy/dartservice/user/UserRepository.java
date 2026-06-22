@@ -8,12 +8,16 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface UserRepository {
 
 	@Select("SELECT COUNT(*) > 0 FROM users WHERE email = #{email}")
 	boolean existsByEmail(@Param("email") String email);
+
+	@Select("SELECT COUNT(*) > 0 FROM users WHERE email = #{email} AND id != #{id}")
+	boolean existsByEmailExceptId(@Param("email") String email, @Param("id") Long id);
 
 	@Select("""
 		SELECT id, email, password, name, role, created_at
@@ -41,4 +45,12 @@ public interface UserRepository {
 		""")
 	@Options(useGeneratedKeys = true, keyProperty = "id")
 	void insert(User user);
+
+	@Update("""
+		UPDATE users
+		SET email = #{email},
+		    name = #{name}
+		WHERE id = #{id}
+		""")
+	void updateProfile(User user);
 }

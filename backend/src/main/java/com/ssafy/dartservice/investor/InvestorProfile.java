@@ -11,7 +11,7 @@ public class InvestorProfile {
 	private Long userId;
 	private String investmentExperience;
 	private String riskTolerance;
-	private String investmentGoal;
+	private String investmentGoals;
 	private BigDecimal investableAmount;
 	private String preferredSectors;
 	private LocalDateTime createdAt;
@@ -20,26 +20,26 @@ public class InvestorProfile {
 	public InvestorProfile() {
 	}
 
-	private InvestorProfile(User user, String investmentExperience, String riskTolerance, String investmentGoal, BigDecimal investableAmount, String preferredSectors) {
+	private InvestorProfile(User user, String investmentExperience, String riskTolerance, String investmentGoals, BigDecimal investableAmount, String preferredSectors) {
 		this.user = user;
 		this.userId = user.getId();
 		this.investmentExperience = investmentExperience;
 		this.riskTolerance = riskTolerance;
-		this.investmentGoal = investmentGoal;
+		this.investmentGoals = investmentGoals;
 		this.investableAmount = investableAmount;
 		this.preferredSectors = preferredSectors;
 		this.createdAt = LocalDateTime.now();
 		this.updatedAt = this.createdAt;
 	}
 
-	public static InvestorProfile create(User user, String investmentExperience, String riskTolerance, String investmentGoal, BigDecimal investableAmount, String preferredSectors) {
-		return new InvestorProfile(user, investmentExperience, riskTolerance, investmentGoal, investableAmount, preferredSectors);
+	public static InvestorProfile create(User user, String investmentExperience, String riskTolerance, String investmentGoals, BigDecimal investableAmount, String preferredSectors) {
+		return new InvestorProfile(user, investmentExperience, riskTolerance, investmentGoals, investableAmount, preferredSectors);
 	}
 
-	public void update(String investmentExperience, String riskTolerance, String investmentGoal, BigDecimal investableAmount, String preferredSectors) {
+	public void update(String investmentExperience, String riskTolerance, String investmentGoals, BigDecimal investableAmount, String preferredSectors) {
 		this.investmentExperience = investmentExperience;
 		this.riskTolerance = riskTolerance;
-		this.investmentGoal = investmentGoal;
+		this.investmentGoals = investmentGoals;
 		this.investableAmount = investableAmount;
 		this.preferredSectors = preferredSectors;
 		this.updatedAt = LocalDateTime.now();
@@ -86,11 +86,19 @@ public class InvestorProfile {
 	}
 
 	public String getInvestmentGoal() {
-		return investmentGoal;
+		return investmentGoals;
 	}
 
 	public void setInvestmentGoal(String investmentGoal) {
-		this.investmentGoal = investmentGoal;
+		this.investmentGoals = investmentGoal;
+	}
+
+	public String getInvestmentGoals() {
+		return investmentGoals;
+	}
+
+	public void setInvestmentGoals(String investmentGoals) {
+		this.investmentGoals = investmentGoals;
 	}
 
 	public BigDecimal getInvestableAmount() {

@@ -4,6 +4,10 @@ export function getMyInfo() {
   return api.get('/users/me')
 }
 
+export function updateMyInfo(payload) {
+  return api.put('/users/me', payload)
+}
+
 export function getInvestorProfile() {
   return api.get('/users/me/user-profile')
 }

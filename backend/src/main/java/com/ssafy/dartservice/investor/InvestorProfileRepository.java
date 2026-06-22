@@ -13,8 +13,11 @@ import org.apache.ibatis.annotations.Update;
 public interface InvestorProfileRepository {
 
 	@Select("""
-		SELECT id, user_id, investment_experience, risk_tolerance, investment_goal,
-		       investable_amount, preferred_sectors, created_at, updated_at
+		SELECT id, user_id AS userId,
+		       investment_experience AS investmentExperience,
+		       risk_tolerance AS riskTolerance,
+		       investment_goals AS investmentGoals,
+		       preferred_sectors, created_at, updated_at
 		FROM users_profile
 		WHERE user_id = #{user.id}
 		""")
@@ -22,12 +25,12 @@ public interface InvestorProfileRepository {
 
 	@Insert("""
 		INSERT INTO users_profile (
-			user_id, investment_experience, risk_tolerance, investment_goal,
-			investable_amount, preferred_sectors, created_at, updated_at
+			user_id, investment_experience, risk_tolerance, investment_goals,
+			preferred_sectors, created_at, updated_at
 		)
 		VALUES (
-			#{userId}, #{investmentExperience}, #{riskTolerance}, #{investmentGoal},
-			#{investableAmount}, #{preferredSectors}, #{createdAt}, #{updatedAt}
+			#{userId}, #{investmentExperience}, #{riskTolerance}, #{investmentGoals},
+			#{preferredSectors}, #{createdAt}, #{updatedAt}
 		)
 		""")
 	@Options(useGeneratedKeys = true, keyProperty = "id")
@@ -37,8 +40,7 @@ public interface InvestorProfileRepository {
 		UPDATE users_profile
 		SET investment_experience = #{investmentExperience},
 		    risk_tolerance = #{riskTolerance},
-		    investment_goal = #{investmentGoal},
-		    investable_amount = #{investableAmount},
+		    investment_goals = #{investmentGoals},
 		    preferred_sectors = #{preferredSectors},
 		    updated_at = #{updatedAt}
 		WHERE id = #{id}

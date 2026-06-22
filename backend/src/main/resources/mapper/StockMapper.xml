@@ -2,14 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.ssafy.dartservice.report.ReportMapper">
+<mapper namespace="com.ssafy.dartservice.stock.StockMapper">
 
-    <select id="searchByKeyword" resultType="com.ssafy.dartservice.report.StockSearchResponseDto">
-        SELECT stock_code, stock_name, market
-        FROM stocks
-        WHERE stock_name LIKE CONCAT(#{keyword}, '%')
-           OR stock_code LIKE CONCAT(#{keyword}, '%')
-        LIMIT 8
+    <select id="countStocks" resultType="int">
+        SELECT COUNT(*) FROM stocks
     </select>
+
+    <select id="countFinancials" resultType="int">
+        SELECT COUNT(*) FROM stock_financials
+    </select>
+
+    <insert id="insertStock">
+        INSERT IGNORE INTO stocks (stock_code, corp_code, stock_name, market, sector)
+        VALUES (#{stockCode}, #{corpCode}, #{stockName}, #{market}, #{sector})
+    </insert>
+
+    <insert id="insertStockInfo">
+        INSERT INTO stock_info (stock_code, sector)
+        VALUES (#{stockCode}, #{sector})
+        ON DUPLICATE KEY UPDATE sector = #{sector}, updated_at = CURRENT_TIMESTAMP
+    </insert>
 
 </mapper>

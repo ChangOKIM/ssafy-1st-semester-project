@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.dartservice.recommendation.RecommendationMapper">
+
+    <select id="findAll" resultType="com.ssafy.dartservice.recommendation.dto.StockInfo">
+        SELECT stock_code AS stockCode, sector FROM stock_info
+    </select>
+
+    <select id="findAllWithFinancials" resultType="com.ssafy.dartservice.recommendation.dto.RecommendItem">
+        SELECT
+            si.stock_code       AS stockCode,
+            s.stock_name        AS stockName,
+            si.sector,
+            sf.debt_ratio       AS debtRatio,
+            sf.interest_coverage AS interestCoverage,
+            sf.current_ratio    AS currentRatio,
+            sf.roe,
+            sf.operating_margin AS operatingMargin
+        FROM stock_info si
+        INNER JOIN stocks s
+            ON si.stock_code = s.stock_code
+        INNER JOIN stock_financials sf
+            ON si.stock_code = sf.stock_code
+           AND sf.period_code = '11011'
+           AND sf.base_year   = YEAR(NOW()) - 1
+        WHERE sf.debt_ratio IS NOT NULL
+    </select>
+
+    <delete id="deleteByUserId">
+        DELETE FROM recommendations WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="insertRecommendations">
+        INSERT INTO recommendations (user_id, stock_code, rec_type, score)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.stockCode}, #{item.recType}, #{item.score})
+        </foreach>
+    </insert>
+
+</mapper>
