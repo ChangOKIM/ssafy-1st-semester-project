@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS stocks (
     corp_code   VARCHAR(8)   NULL,
     stock_name  VARCHAR(100) NOT NULL,
     market      VARCHAR(10)  NOT NULL,
-    sector      VARCHAR(50)  NOT NULL,
     created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -47,6 +46,7 @@ CREATE TABLE IF NOT EXISTS stocks (
 CREATE TABLE IF NOT EXISTS stock_info (
     stock_code   VARCHAR(20) NOT NULL,
     sector       VARCHAR(50) NOT NULL,
+    intro        VARCHAR(500),
     dividend_yield DECIMAL(5,2),       -- V1.5
     volatility     DECIMAL(6,3),        -- V1.5
     updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -87,14 +87,14 @@ CREATE TABLE IF NOT EXISTS stock_financials (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. stock_reports (종목리포트)
-CREATE TABLE IF NOT EXISTS stock_reports (
-    id          BIGINT        NOT NULL AUTO_INCREMENT,
-    stock_code  VARCHAR(10)   NOT NULL,
-    content     TEXT          NOT NULL,
-    generated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS stock_reports(
+    id           BIGINT        NOT NULL AUTO_INCREMENT,
+    stock_code   VARCHAR(10)   NOT NULL,
+    level        VARCHAR(30)   NOT NULL DEFAULT 'BEGINNER',
+    content      TEXT          NOT NULL,
+    generated_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    INDEX idx_reports_code_date (stock_code, generated_at),
-    INDEX idx_reports_code (stock_code),
+    INDEX idx_reports_code_level_date (stock_code, level, generated_at),
     CONSTRAINT fk_reports_stock FOREIGN KEY (stock_code) REFERENCES stocks (stock_code) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

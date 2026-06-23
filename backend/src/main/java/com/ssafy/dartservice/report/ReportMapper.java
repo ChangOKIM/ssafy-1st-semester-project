@@ -19,6 +19,6 @@ public interface ReportMapper {
                                          @Param("baseYear") int baseYear,
                                          @Param("periodCode") String periodCode);
 
-    String findCachedReport(@Param("stockCode") String stockCode);
-    void saveReport(@Param("stockCode") String stockCode, @Param("content") String content);
+    String findCachedReport(@Param("stockCode") String stockCode, @Param("level") String level);
+    void saveReport(@Param("stockCode") String stockCode, @Param("level") String level, @Param("content") String content);
 }

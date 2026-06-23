@@ -1,9 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
+import { getStockPrice } from '../api/stockApi'
+
+const POLL_INTERVAL = 30_000
 
 const router = useRouter()
 
@@ -11,9 +14,65 @@ const overallList = ref([])
 const sectorCards = ref([])
 const loading = ref(false)
 const overallError = ref('')
+const priceMap = ref({})
+const pricesLoading = ref(false)
+
+let pollTimer = null
 
 function itemName(item) {
   return item.stockName || item.name || item.stockCode || item.stock_code || '추천 종목'
+}
+
+function allCodes() {
+  const codes = new Set()
+  overallList.value.forEach((i) => i.stockCode && codes.add(i.stockCode))
+  sectorCards.value.forEach((c) => c.items.forEach((i) => i.stockCode && codes.add(i.stockCode)))
+  return [...codes]
+}
+
+function priceOf(code) {
+  const p = priceMap.value[code]
+  return p ? Number(p.currentPrice ?? 0) : null
+}
+
+function changeOf(code) {
+  const p = priceMap.value[code]
+  return p ? Number(p.changeRate ?? 0) : null
+}
+
+function stopPolling() {
+  if (pollTimer !== null) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function startPolling() {
+  stopPolling()
+  pollTimer = setInterval(() => {
+    if (!document.hidden) loadPrices()
+  }, POLL_INTERVAL)
+}
+
+async function loadPrices() {
+  const codes = allCodes()
+  if (!codes.length || pricesLoading.value) return
+  pricesLoading.value = true
+  const results = await Promise.allSettled(codes.map((c) => getStockPrice(c)))
+  const map = {}
+  results.forEach((res, i) => {
+    if (res.status === 'fulfilled') {
+      const raw = res.value?.data?.data ?? res.value?.data ?? null
+      const price = Array.isArray(raw) ? (raw[0] ?? null) : raw
+      if (price) map[codes[i]] = price
+    }
+  })
+  priceMap.value = map
+  pricesLoading.value = false
+}
+
+function onVisibilityChange() {
+  if (!document.hidden) loadPrices()
 }
 
 async function loadRecommendations() {
@@ -32,6 +91,9 @@ async function loadRecommendations() {
       items: (s.items ?? []).slice(0, 3),
       error: '',
     }))
+
+    await loadPrices()
+    startPolling()
   } catch {
     overallError.value = '추천 데이터를 불러올 수 없습니다.'
     sectorCards.value = []
@@ -40,7 +102,15 @@ async function loadRecommendations() {
   }
 }
 
-onMounted(loadRecommendations)
+onMounted(() => {
+  loadRecommendations()
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  stopPolling()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 </script>
 
 <template>
@@ -81,7 +151,18 @@ onMounted(loadRecommendations)
                 @click="router.push('/report/' + item.stockCode)"
               >
                 <em class="recs-rank-num">{{ index + 1 }}</em>
-                <strong>{{ itemName(item) }}</strong>
+                <strong class="recs-item-name">{{ itemName(item) }}</strong>
+                <span class="rec-price-group">
+                  <span class="rec-price">
+                    {{ priceOf(item.stockCode) != null ? priceOf(item.stockCode).toLocaleString() + '원' : (pricesLoading ? '…' : '—') }}
+                  </span>
+                  <span
+                    v-if="changeOf(item.stockCode) != null"
+                    class="rec-change"
+                    :class="changeOf(item.stockCode) >= 0 ? 'positive' : 'negative'"
+                  >{{ changeOf(item.stockCode) >= 0 ? '▲' : '▼' }}{{ Math.abs(changeOf(item.stockCode)).toFixed(2) }}%</span>
+                  <span v-else class="rec-change muted">—</span>
+                </span>
                 <b class="recs-score">{{ item.score != null ? Math.round(item.score) : '-' }}</b>
               </li>
             </ol>
@@ -117,7 +198,18 @@ onMounted(loadRecommendations)
                   @click="router.push('/report/' + item.stockCode)"
                 >
                   <em class="recs-rank-num recs-rank-num-sm">{{ index + 1 }}</em>
-                  <span>{{ itemName(item) }}</span>
+                  <span class="recs-item-name">{{ itemName(item) }}</span>
+                  <span class="rec-price-group">
+                    <span class="rec-price">
+                      {{ priceOf(item.stockCode) != null ? priceOf(item.stockCode).toLocaleString() + '원' : (pricesLoading ? '…' : '—') }}
+                    </span>
+                    <span
+                      v-if="changeOf(item.stockCode) != null"
+                      class="rec-change"
+                      :class="changeOf(item.stockCode) >= 0 ? 'positive' : 'negative'"
+                    >{{ changeOf(item.stockCode) >= 0 ? '▲' : '▼' }}{{ Math.abs(changeOf(item.stockCode)).toFixed(2) }}%</span>
+                    <span v-else class="rec-change muted">—</span>
+                  </span>
                   <b class="recs-score">{{ item.score != null ? Math.round(item.score) : '-' }}</b>
                 </li>
               </ol>

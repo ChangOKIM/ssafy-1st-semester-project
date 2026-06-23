@@ -13,9 +13,15 @@
     </select>
 
     <select id="findById" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
-        SELECT stock_code, corp_code, stock_name, market, sector
-        FROM stocks
-        WHERE stock_code = #{stockCode}
+        SELECT s.stock_code  AS stockCode,
+               s.corp_code   AS corpCode,
+               s.stock_name  AS stockName,
+               s.market      AS market,
+               si.sector     AS sector,
+               si.intro      AS intro
+        FROM stocks s
+        LEFT JOIN stock_info si ON s.stock_code = si.stock_code
+        WHERE s.stock_code = #{stockCode}
     </select>
 
     <select id="findFinancial" resultType="com.ssafy.dartservice.stock.dart.StockFinancial">
@@ -59,14 +65,15 @@
     <select id="findCachedReport" resultType="string">
         SELECT content FROM stock_reports
         WHERE stock_code = #{stockCode}
+          AND level = #{level}
           AND DATE(generated_at) = CURDATE()
         ORDER BY generated_at DESC
         LIMIT 1
     </select>
 
     <insert id="saveReport">
-        INSERT INTO stock_reports (stock_code, content)
-        VALUES (#{stockCode}, #{content})
+        INSERT INTO stock_reports (stock_code, level, content)
+        VALUES (#{stockCode}, #{level}, #{content})
     </insert>
 
 </mapper>

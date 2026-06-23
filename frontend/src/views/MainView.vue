@@ -1,10 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
-import { searchStocks } from '../api/stockApi'
+import { getStockPrice, searchStocks } from '../api/stockApi'
 import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
@@ -15,6 +15,11 @@ const searchLoading = ref(false)
 const searchMessage = ref('')
 const overallRecommendations = ref([])
 const recommendationMessage = ref('')
+const recPriceMap = ref({})
+const recPricesLoading = ref(false)
+
+const POLL_INTERVAL = 30_000
+let pollTimer = null
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 
@@ -49,7 +54,6 @@ function recommendationName(item) {
   return item.stockName || item.name || item.stockCode || item.stock_code || '추천 종목'
 }
 
-// TODO: API 연동 — 인기 종목 실시간 데이터 연동 필요
 const POPULAR_STOCKS = [
   { name: '삼성전자', code: '005930' },
   { name: 'SK하이닉스', code: '000660' },
@@ -58,10 +62,14 @@ const POPULAR_STOCKS = [
   { name: '현대자동차', code: '005380' },
 ]
 
-// TODO: API 연동 — 추천 종목 실시간 등락 데이터 연동 필요
-const DUMMY_CHANGES = [+1.23, -0.87, +2.10, -1.45, +0.67, +3.21, -2.34, +0.92, -0.56, +1.78]
-function getItemChange(index) {
-  return DUMMY_CHANGES[index] ?? 0
+function recChangeRate(item) {
+  const p = recPriceMap.value[item.stockCode]
+  return p ? Number(p.changeRate ?? 0) : null
+}
+
+function recCurrentPrice(item) {
+  const p = recPriceMap.value[item.stockCode]
+  return p ? Number(p.currentPrice ?? 0) : null
 }
 
 async function submitSearch() {
@@ -98,6 +106,41 @@ function goToRecommendations() {
   router.push('/mypage')
 }
 
+function stopPolling() {
+  if (pollTimer !== null) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function startPolling() {
+  stopPolling()
+  pollTimer = setInterval(() => {
+    if (!document.hidden) loadRecPrices()
+  }, POLL_INTERVAL)
+}
+
+async function loadRecPrices() {
+  const items = overallRecommendations.value
+  if (!items.length || recPricesLoading.value) return
+  recPricesLoading.value = true
+  const results = await Promise.allSettled(items.map((item) => getStockPrice(item.stockCode)))
+  const map = {}
+  results.forEach((res, i) => {
+    if (res.status === 'fulfilled') {
+      const raw = res.value?.data?.data ?? res.value?.data ?? null
+      const price = Array.isArray(raw) ? (raw[0] ?? null) : raw
+      if (price) map[items[i].stockCode] = price
+    }
+  })
+  recPriceMap.value = map
+  recPricesLoading.value = false
+}
+
+function onVisibilityChange() {
+  if (!document.hidden) loadRecPrices()
+}
+
 async function loadRecommendations() {
   if (!isLoggedIn.value) {
     recommendationMessage.value = '로그인하면 맞춤 추천 TOP 10을 볼 수 있습니다.'
@@ -112,13 +155,35 @@ async function loadRecommendations() {
 
     if (overallRecommendations.value.length === 0) {
       recommendationMessage.value = '추천 데이터가 아직 없습니다. 투자 성향을 먼저 등록해 주세요.'
+    } else {
+      await loadRecPrices()
+      startPolling()
     }
   } catch (error) {
     recommendationMessage.value = '추천 API 응답을 확인할 수 없습니다.'
   }
 }
 
-onMounted(loadRecommendations)
+watch(isLoggedIn, (loggedIn) => {
+  if (!loggedIn) {
+    stopPolling()
+    overallRecommendations.value = []
+    recPriceMap.value = {}
+    recommendationMessage.value = '로그인하면 맞춤 추천 TOP 10을 볼 수 있습니다.'
+  } else {
+    loadRecommendations()
+  }
+})
+
+onMounted(() => {
+  loadRecommendations()
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  stopPolling()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 </script>
 
 <template>
@@ -166,7 +231,6 @@ onMounted(loadRecommendations)
         <aside class="recommendation-summary">
           <div class="summary-header">
             <span>나의 AI 추천 종목 TOP 10</span>
-            <!-- <button type="button" @click="goToRecommendations">리포트 보기</button> -->
           </div>
 
           <div class="rec-list">
@@ -180,11 +244,15 @@ onMounted(loadRecommendations)
             >
               <em class="rec-rank">{{ index + 1 }}</em>
               <strong class="rec-name">{{ recommendationName(item) }} <span class="rec-code">({{ item.stockCode }})</span></strong>
-              <!-- TODO: API 연동 — 실시간 등락 데이터 연동 필요 -->
-              <span
-                class="rec-change"
-                :class="getItemChange(index) >= 0 ? 'positive' : 'negative'"
-              >{{ getItemChange(index) >= 0 ? '▲' : '▼' }}{{ Math.abs(getItemChange(index)).toFixed(2) }}%</span>
+              <span class="rec-price-group">
+                <span class="rec-price">{{ recCurrentPrice(item) != null ? recCurrentPrice(item).toLocaleString() + '원' : '—' }}</span>
+                <span
+                  v-if="recChangeRate(item) != null"
+                  class="rec-change"
+                  :class="recChangeRate(item) >= 0 ? 'positive' : 'negative'"
+                >{{ recChangeRate(item) >= 0 ? '▲' : '▼' }}{{ Math.abs(recChangeRate(item)).toFixed(2) }}%</span>
+                <span v-else class="rec-change muted">—</span>
+              </span>
               <b class="rec-score">{{ item.score != null ? Math.round(item.score) : '-' }}<small v-if="item.score != null" class="rec-score-unit">점</small></b>
             </button>
           </div>

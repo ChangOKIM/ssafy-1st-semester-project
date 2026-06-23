@@ -13,4 +13,5 @@ public class StockSearchResponseDto {
     private String stockName;
     private String market;
     private String sector;
+    private String intro;
 }

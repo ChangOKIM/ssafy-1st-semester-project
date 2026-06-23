@@ -41,7 +41,9 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/api/v1/health", "/auth/signup", "/auth/login", "/auth/check-email").permitAll()
 				.requestMatchers("/stocks/**").permitAll() //, "/stocks/{code}/chart", "/stocks/{code}/financial", /stocks/{code}/price
-				.requestMatchers("/reports/**").permitAll()
+				.requestMatchers("/reports/search").permitAll()
+				.requestMatchers("/reports/*/info").permitAll()
+				.requestMatchers("/reports/**").authenticated()
 				//.requestMatchers("/recommendations/**", ).permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 				.anyRequest().authenticated()

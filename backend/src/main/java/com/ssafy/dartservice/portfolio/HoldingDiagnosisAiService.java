@@ -8,18 +8,25 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class HoldingDiagnosisAiService {
 
-	private final ChatClient.Builder chatClientBuilder;
+	private final ChatClient chatClient;
 	private final ObjectMapper objectMapper;
+
+	public HoldingDiagnosisAiService(
+		@Qualifier("openaiChatClient") ChatClient chatClient,
+		ObjectMapper objectMapper
+	) {
+		this.chatClient = chatClient;
+		this.objectMapper = objectMapper;
+	}
 
 	public List<DiagnosisSection> diagnose(
 		InvestorProfile profile,
@@ -44,8 +51,7 @@ public class HoldingDiagnosisAiService {
 				holdings.stream().map(holding -> DiagnosisHolding.from(holding, totalEvaluation)).toList()
 			);
 			String json = objectMapper.writeValueAsString(input);
-			String content = chatClientBuilder.build()
-				.prompt()
+			String content = chatClient.prompt()
 				.system(SYSTEM_PROMPT)
 				.user(json)
 				.call()

@@ -13,7 +13,6 @@ const form = reactive({
   investmentExperience: 'BEGINNER',
   riskTolerance: 'MEDIUM',
   investmentGoal: 'STABLE_GROWTH',
-  investableAmount: 1000000,
   preferredSectors: ['IT·소프트웨어'],
 })
 
@@ -51,7 +50,7 @@ const sectorOptions = [
   '소재·화학·철강',
   '유틸리티',
 ]
-const canSubmit = computed(() => form.preferredSectors.length > 0 && Number(form.investableAmount) >= 0)
+const canSubmit = computed(() => form.preferredSectors.length > 0)
 
 function toggleSector(sector) {
   if (form.preferredSectors.includes(sector)) {
@@ -64,7 +63,7 @@ function toggleSector(sector) {
 
 async function submit() {
   if (!canSubmit.value) {
-    serverError.value = '투자가능 금액과 관심분야를 확인하세요.'
+    serverError.value = '관심분야를 하나 이상 선택하세요.'
     return
   }
 
@@ -76,7 +75,6 @@ async function submit() {
       investmentExperience: form.investmentExperience,
       riskTolerance: form.riskTolerance,
       investmentGoal: form.investmentGoal,
-      investableAmount: Number(form.investableAmount),
       preferredSectors: form.preferredSectors,
     })
     router.push('/mypage')
@@ -119,11 +117,6 @@ async function submit() {
           <select v-model="form.investmentGoal">
             <option v-for="option in goalOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </select>
-        </label>
-
-        <label class="field">
-          <span>투자가능 금액</span>
-          <input v-model.number="form.investableAmount" type="number" min="0" step="10000" />
         </label>
 
         <div class="sector-picker">

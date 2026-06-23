@@ -20,6 +20,9 @@ public class KisPriceResponse {
         @JsonProperty("stck_prpr")
         private String stckPrpr;          // 주식 현재가
 
+        @JsonProperty("hts_avls")
+        private String htsAvls;
+
         @JsonProperty("prdy_vrss")
         private String prdyVrss;          // 전일 대비
 

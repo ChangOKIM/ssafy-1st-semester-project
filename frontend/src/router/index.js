@@ -6,6 +6,7 @@ import HoldingsView from '../views/HoldingsView.vue'
 import MainView from '../views/MainView.vue'
 import RecommendationView from '../views/RecommendationView.vue'
 import ReportView from '../views/ReportView.vue'
+import StocksView from '../views/StocksView.vue'
 import MyInfoView from '../views/MyInfoView.vue'
 import MyPageView from '../views/MyPageView.vue'
 import { useAuthStore } from '../stores/authStore'
@@ -16,6 +17,7 @@ const router = createRouter({
     { path: '/', name: 'home', component: MainView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/signup', name: 'signup', component: SignupView },
+    { path: '/stocks', name: 'stocks', component: StocksView },
     { path: '/investor-profile', name: 'investor-profile', component: InvestorProfileView, meta: { requiresAuth: true } },
     { path: '/mypage', name: 'mypage', component: MyPageView, meta: { requiresAuth: true } },
     { path: '/myinfo', name: 'myinfo', component: MyInfoView, meta: { requiresAuth: true } },

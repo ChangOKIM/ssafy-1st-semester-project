@@ -1,5 +1,7 @@
 package com.ssafy.dartservice.report;
 
+import com.ssafy.dartservice.investor.InvestorProfile;
+import com.ssafy.dartservice.investor.InvestorProfileRepository;
 import com.ssafy.dartservice.report.dto.ReportInput;
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
 import com.ssafy.dartservice.stock.ChartService;
@@ -7,6 +9,7 @@ import com.ssafy.dartservice.stock.FinancialService;
 import com.ssafy.dartservice.stock.StockService;
 import com.ssafy.dartservice.stock.dto.ChartResponseDto;
 import com.ssafy.dartservice.stock.dto.FinancialResponseDto;
+import com.ssafy.dartservice.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ public class ReportService {
     private final ReportLlmService reportLlmService;
     private final StockService stockService;
     private final SectorGuide sectorGuide;
+    private final InvestorProfileRepository investorProfileRepository;
 
 
     public List<StockSearchResponseDto> searchStocks(String keyword) {
@@ -33,12 +37,8 @@ public class ReportService {
         return result;
     }
 
-    public List<ChartResponseDto> getChart(String stockCode, String period) {
-        return chartService.getChart(stockCode, period);
-    }
-
-    public List<FinancialResponseDto> getFinancials(String stockCode, int latestYear) {
-        return financialService.getFinancials(stockCode, latestYear);
+    public StockSearchResponseDto getStockInfo(String stockCode) {
+        return reportMapper.findById(stockCode);
     }
 
     // 원 단위 Long → "약 258.9조 원" 같은 읽기 쉬운 문자열
@@ -57,8 +57,12 @@ public class ReportService {
         }
     }
 
-    public String getReport(String stockCode, int latestYear) {
-        String cached = reportMapper.findCachedReport(stockCode);
+    public String getReport(String stockCode, int latestYear, User user) {
+        String level = investorProfileRepository.findByUser(user)
+                .map(InvestorProfile::getInvestmentExperience)
+                .orElse("BEGINNER");
+
+        String cached = reportMapper.findCachedReport(stockCode, level);
         if (cached != null) {
             log.info("AI 리포트 캐시 히트 - stockCode: {}", stockCode);
             return cached;
@@ -73,7 +77,6 @@ public class ReportService {
         String companyName = stock.getStockName();
         String guide = sectorGuide.get(stock.getSector());
 
-
         // 분기 → LatestQuarter (없으면 null)
         ReportInput.LatestQuarter latestQuarter = (quarter == null) ? null
                 : new ReportInput.LatestQuarter(
@@ -87,6 +90,7 @@ public class ReportService {
         ReportInput input = new ReportInput(
                 companyName,
                 guide,
+                level,
                 financials.stream().map(f -> new ReportInput.FinancialYear(
                         f.getBaseYear(),
                         toReadableWon(f.getRevenue()),
@@ -102,8 +106,8 @@ public class ReportService {
         );
 
         String report = reportLlmService.generateReport(input);
-        reportMapper.saveReport(stockCode, report);
-        log.info("AI 리포트 저장 완료 - stockCode: {}", stockCode);
+        reportMapper.saveReport(stockCode, level, report);
+        log.info("AI 리포트 저장 완료 - stockCode: {}, level: {}", stockCode, level);
         return report;
     }
 

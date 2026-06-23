@@ -18,9 +18,57 @@
     </insert>
 
     <insert id="insertStockInfo">
-        INSERT INTO stock_info (stock_code, sector)
-        VALUES (#{stockCode}, #{sector})
-        ON DUPLICATE KEY UPDATE sector = #{sector}, updated_at = CURRENT_TIMESTAMP
+        INSERT INTO stock_info (stock_code, sector, intro)
+        VALUES (#{stockCode}, #{sector}, #{intro})
+        ON DUPLICATE KEY UPDATE sector = #{sector}, intro = #{intro}, updated_at = CURRENT_TIMESTAMP
     </insert>
+
+    <select id="getSectors" resultType="string">
+        SELECT DISTINCT sector FROM stocks
+        WHERE sector IS NOT NULL AND sector != ''
+        ORDER BY sector
+    </select>
+
+    <update id="updateMarketCap">
+        UPDATE stock_info SET market_cap = #{marketCap}, updated_at = CURRENT_TIMESTAMP
+        WHERE stock_code = #{stockCode}
+    </update>
+
+    <select id="listStocks" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
+        SELECT s.stock_code  AS stockCode,
+               s.stock_name  AS stockName,
+               s.market      AS market,
+               s.sector      AS sector
+        FROM stocks s
+        LEFT JOIN stock_info si ON s.stock_code = si.stock_code
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (s.stock_name LIKE CONCAT(#{keyword}, '%')
+                OR s.stock_code LIKE CONCAT(#{keyword}, '%'))
+            </if>
+            <if test="sector != null and sector != ''">
+                AND s.sector = #{sector}
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'marketcap'">ORDER BY COALESCE(si.market_cap, 0) DESC</when>
+            <otherwise>ORDER BY s.stock_name ASC</otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countStocksByKeyword" resultType="int">
+        SELECT COUNT(*)
+        FROM stocks
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (stock_name LIKE CONCAT(#{keyword}, '%')
+                OR stock_code LIKE CONCAT(#{keyword}, '%'))
+            </if>
+            <if test="sector != null and sector != ''">
+                AND sector = #{sector}
+            </if>
+        </where>
+    </select>
 
 </mapper>

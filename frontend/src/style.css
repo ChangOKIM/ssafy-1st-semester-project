@@ -681,6 +681,13 @@ dd {
   font-size: 13px;
 }
 
+.metric-desc {
+  margin: 0;
+  color: #93a49b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .positive {
   color: #e53e3e !important;
 }
@@ -888,8 +895,8 @@ dd {
 
 .app-footer-inner {
   display: flex;
-  flex-direction: column;
-  gap: 26px;
+  flex-direction: row;
+  gap: 70px;
   padding: 34px 0;
 }
 
@@ -1002,13 +1009,26 @@ dd {
 
 .report-price-section {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+}
+
+.report-name-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 16px;
 }
 
 .report-stock-name {
-  margin: 0 0 4px;
+  margin: 0;
   color: #102018;
-  font-size: 36px;
+  font-size: 28px;
+}
+
+.report-stock-intro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .report-price-row {
@@ -1019,9 +1039,9 @@ dd {
 }
 
 .report-current-price {
-  font-size: 40px;
+  font-size: 28px;
   font-weight: 900;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 
 .report-change {
@@ -1097,7 +1117,7 @@ dd {
 
 .report-financial-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
 }
 
@@ -1183,7 +1203,7 @@ dd {
 
 .recs-rank-item {
   display: grid;
-  grid-template-columns: 34px 1fr 60px;
+  grid-template-columns: 34px 1fr auto 60px;
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
@@ -1223,15 +1243,15 @@ dd {
 }
 
 .recs-sector-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .recs-sector-card {
   display: grid;
-  gap: 14px;
-  padding: 20px;
+  gap: 16px;
+  padding: 24px;
 }
 
 .recs-sector-head {
@@ -1243,19 +1263,19 @@ dd {
 
 .recs-sector-head strong {
   color: #102018;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 900;
 }
 
 .recs-sector-head span {
   color: #1f6f5b;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
 }
 
 .recs-sector-list {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1263,11 +1283,11 @@ dd {
 
 .recs-sector-item {
   display: grid;
-  grid-template-columns: 24px 1fr 48px;
-  gap: 8px;
+  grid-template-columns: 28px 1fr auto 56px;
+  gap: 10px;
   align-items: center;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 12px 14px;
+  border-radius: 8px;
   background: #f7faf6;
 }
 
@@ -1275,7 +1295,7 @@ dd {
   min-width: 0;
   overflow: hidden;
   color: #25342b;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1348,8 +1368,7 @@ dd {
     grid-template-columns: 1fr;
   }
 
-  .report-financial-grid,
-  .recs-sector-grid {
+  .report-financial-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1388,8 +1407,7 @@ dd {
   .holding-row,
   .account-card,
   .diagnosis-grid,
-  .report-financial-grid,
-  .recs-sector-grid {
+  .report-financial-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1473,10 +1491,24 @@ dd {
   color: #68766e;
   margin-left: 1px;
 }
+.rec-price-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rec-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #102018;
+  font-variant-numeric: tabular-nums;
+}
+
 .rec-change {
   font-size: 12px;
   font-weight: 700;
-  min-width: 60px;
   text-align: right;
   flex-shrink: 0;
 }
@@ -1507,4 +1539,260 @@ dd {
 .popular-chip:hover {
   background: #e6f0eb;
   border-color: #7ab893;
+}
+
+/* 섹터 칩 필터 */
+.sector-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sector-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #d1ddd6;
+  background: #fff;
+  font-size: 13px;
+  color: #25342b;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+  white-space: nowrap;
+}
+
+.sector-chip:hover {
+  background: #f0f5f2;
+  border-color: #9ab8a5;
+}
+
+.sector-chip.active {
+  background: #1f6f5b;
+  border-color: #1f6f5b;
+  color: #fff;
+}
+
+/* 전체 종목 페이지 */
+.stocks-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  display: grid;
+  gap: 24px;
+}
+
+.stocks-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stocks-page-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #102018;
+  margin: 0 0 4px;
+}
+
+.stocks-total {
+  font-size: 13px;
+  margin: 0;
+}
+
+.stocks-sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sort-label {
+  font-size: 12px;
+  color: #68766e;
+  font-weight: 600;
+}
+
+.sort-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #d1ddd6;
+  background: #fff;
+  font-size: 13px;
+  color: #25342b;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+
+.sort-btn:hover:not(:disabled) {
+  background: #f0f5f2;
+  border-color: #9ab8a5;
+}
+
+.sort-btn.active {
+  background: #1f6f5b;
+  border-color: #1f6f5b;
+  color: #fff;
+}
+
+.sort-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.prices-loading-hint {
+  font-size: 12px;
+}
+
+.stocks-list {
+  display: grid;
+  gap: 8px;
+}
+
+.stock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid #e2e8e4;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s, border-color 0.14s;
+}
+
+.stock-row:hover {
+  background: #f0f5f2;
+  border-color: #b8ccbf;
+}
+
+.stock-row-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stock-row-name {
+  font-size: 15px;
+  color: #102018;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stock-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code-tag {
+  font-size: 12px;
+  color: #68766e;
+  font-variant-numeric: tabular-nums;
+}
+
+.market-tag {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.market-tag.kospi {
+  background: #e8f0ed;
+  color: #1f6f5b;
+}
+
+.market-tag.kosdaq {
+  background: #eef0f8;
+  color: #3b4f8a;
+}
+
+.sector-tag {
+  font-size: 11px;
+  color: #68766e;
+  background: #f2f5f3;
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+
+.stock-row-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.stock-row-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #102018;
+  font-variant-numeric: tabular-nums;
+}
+
+.stock-row-price-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-row-change {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stock-row-cap {
+  font-size: 11px;
+  color: #93a49b;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.stocks-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.stocks-pagination button {
+  padding: 7px 20px;
+  border-radius: 8px;
+  border: 1px solid #d1ddd6;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+
+.stocks-pagination button:hover:not(:disabled) {
+  background: #f0f5f2;
+}
+
+.stocks-pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stocks-pagination span {
+  font-size: 14px;
+  color: #25342b;
+}
+
+@media (max-width: 560px) {
+  .stocks-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stocks-page-header .stock-search {
+    width: 100%;
+  }
 }

@@ -6,7 +6,7 @@ import 'chartjs-adapter-date-fns'
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
-import { getStockAnalysis, getStockChart, getStockFinancial, getStockPrice, searchStocks } from '../api/stockApi'
+import { getStockAnalysis, getStockChart, getStockFinancial, getStockInfo, getStockPrice } from '../api/stockApi'
 
 Chart.register(LinearScale, TimeScale, TimeSeriesScale, Tooltip, CandlestickController, CandlestickElement)
 
@@ -57,6 +57,13 @@ function formatRate(value) {
   return `${num.toFixed(1)}%`
 }
 
+function formatMultiple(value) {
+  if (value == null || value === '' || value === '0' || value === '0.00') return '-'
+  const num = Number(value)
+  if (isNaN(num) || num <= 0) return '-'
+  return `${num.toFixed(2)}배`
+}
+
 const currentPrice = computed(() => {
   if (!price.value) return null
   return price.value.currentPrice ?? price.value.price ?? price.value.clpr ?? price.value.stckPrpr ?? null
@@ -75,6 +82,32 @@ const priceChangeRate = computed(() => {
 const isPositive = computed(() => Number(priceChange.value ?? 0) >= 0)
 
 const stockName = ref('')
+const stockInfo = ref(null)
+
+const POLL_INTERVAL = 30_000
+let priceTimer = null
+
+function stopPricePolling() {
+  if (priceTimer !== null) { clearInterval(priceTimer); priceTimer = null }
+}
+
+function startPricePolling() {
+  stopPricePolling()
+  priceTimer = setInterval(() => {
+    if (!document.hidden) refreshPrice()
+  }, POLL_INTERVAL)
+}
+
+async function refreshPrice() {
+  try {
+    const raw = unwrap(await getStockPrice(code.value))
+    price.value = Array.isArray(raw) ? (raw[0] ?? null) : raw
+  } catch { /* ignore */ }
+}
+
+function onPriceVisibilityChange() {
+  if (!document.hidden) refreshPrice()
+}
 
 function parseKisDate(dateStr) {
   if (!dateStr) return null
@@ -203,11 +236,11 @@ async function loadMainData() {
   chartError.value = ''
   financialError.value = ''
 
-  const [priceRes, chartRes, financialRes, nameRes] = await Promise.allSettled([
+  const [priceRes, chartRes, financialRes, infoRes] = await Promise.allSettled([
     getStockPrice(code.value),
     getStockChart(code.value, period.value),
     getStockFinancial(code.value),
-    searchStocks(code.value),
+    getStockInfo(code.value),
   ])
 
   if (priceRes.status === 'fulfilled') {
@@ -230,12 +263,10 @@ async function loadMainData() {
     financialError.value = '재무 정보를 불러올 수 없습니다.'
   }
 
-  if (nameRes.status === 'fulfilled') {
-    const list = unwrap(nameRes.value)
-    const match = (Array.isArray(list) ? list : [list]).find(
-      (s) => s.stockCode === code.value
-    )
-    stockName.value = match?.stockName ?? code.value
+  if (infoRes.status === 'fulfilled') {
+    const raw = unwrap(infoRes.value)
+    stockInfo.value = Array.isArray(raw) ? (raw[0] ?? null) : raw
+    stockName.value = stockInfo.value?.stockName ?? code.value
   } else {
     stockName.value = code.value
   }
@@ -257,12 +288,18 @@ async function loadAnalysis() {
   analysisLoading.value = false
 }
 
-onMounted(() => {
-  loadMainData()
+onMounted(async () => {
+  await loadMainData()
+  startPricePolling()
+  document.addEventListener('visibilitychange', onPriceVisibilityChange)
   loadAnalysis()
 })
 watch(period, loadChart)
-onUnmounted(() => { if (chartInstance) chartInstance.destroy() })
+onUnmounted(() => {
+  if (chartInstance) chartInstance.destroy()
+  stopPricePolling()
+  document.removeEventListener('visibilitychange', onPriceVisibilityChange)
+})
 </script>
 
 <template>
@@ -277,24 +314,26 @@ onUnmounted(() => { if (chartInstance) chartInstance.destroy() })
       <template v-else>
         <!-- 1. 종목명 / 현재 시세 -->
         <section class="report-price-section">
-          <h1 class="report-stock-name">{{ stockName }} ({{ code }})</h1>
-
-          <div v-if="price && !priceError" class="report-price-row">
-            <strong
-              class="report-current-price"
-              :class="isPositive ? 'positive' : 'negative'"
-            >
-              {{ Number(currentPrice ?? 0).toLocaleString() }}원
-            </strong>
-            <span
-              class="report-change"
-              :class="isPositive ? 'positive' : 'negative'"
-            >
-              {{ isPositive ? '+' : '' }}{{ Number(priceChange ?? 0).toLocaleString() }}
-              ({{ isPositive ? '+' : '' }}{{ formatRate(priceChangeRate) }})
-            </span>
+          <div class="report-name-price-row">
+            <h1 class="report-stock-name">{{ stockName }} ({{ code }})</h1>
+            <div v-if="price && !priceError" class="report-price-row">
+              <strong
+                class="report-current-price"
+                :class="isPositive ? 'positive' : 'negative'"
+              >
+                {{ Number(currentPrice ?? 0).toLocaleString() }}원
+              </strong>
+              <span
+                class="report-change"
+                :class="isPositive ? 'positive' : 'negative'"
+              >
+                {{ isPositive ? '+' : '' }}{{ Number(priceChange ?? 0).toLocaleString() }}
+                ({{ isPositive ? '+' : '' }}{{ formatRate(priceChangeRate) }})
+              </span>
+            </div>
+            <p v-else-if="priceError" class="panel-message">{{ priceError }}</p>
           </div>
-          <p v-else-if="priceError" class="panel-message">{{ priceError }}</p>
+          <p v-if="stockInfo?.intro" class="report-stock-intro muted">{{ stockInfo.intro }}</p>
         </section>
 
         <!-- 2. 주가 차트 -->
@@ -326,38 +365,6 @@ onUnmounted(() => { if (chartInstance) chartInstance.destroy() })
           </div>
         </section>
 
-        <!-- 3. 재무 핵심 지표 -->
-        <section>
-          <h2 class="report-section-title">재무 핵심 지표</h2>
-
-          <p v-if="financialError" class="panel-message">{{ financialError }}</p>
-
-          <div v-else-if="financial" class="report-financial-grid">
-            <div class="metric-card">
-              <span>매출액</span>
-              <strong>{{ formatAmount(financial.revenue ?? financial.totalRevenue ?? financial.매출액) }}</strong>
-              <p>최근 연간 기준</p>
-            </div>
-            <div class="metric-card">
-              <span>영업이익</span>
-              <strong>{{ formatAmount(financial.operatingIncome ?? financial.operatingProfit ?? financial.영업이익) }}</strong>
-              <p>최근 연간 기준</p>
-            </div>
-            <div class="metric-card">
-              <span>당기순이익</span>
-              <strong>{{ formatAmount(financial.netIncome ?? financial.netProfit ?? financial.당기순이익) }}</strong>
-              <p>최근 연간 기준</p>
-            </div>
-            <div class="metric-card">
-              <span>부채비율</span>
-              <strong>{{ formatRate(financial.debtRatio ?? financial.debtToEquity ?? financial.부채비율) }}</strong>
-              <p>자본 대비 부채 비율</p>
-            </div>
-          </div>
-
-          <p v-else class="panel-message">재무 데이터가 없습니다.</p>
-        </section>
-
         <!-- 4. AI 3분 리포트 -->
         <section>
           <h2 class="report-section-title">AI 3분 리포트</h2>
@@ -373,6 +380,48 @@ onUnmounted(() => { if (chartInstance) chartInstance.destroy() })
           </div>
 
           <p v-else class="panel-message">AI 분석 데이터가 없습니다.</p>
+        </section>
+
+        <!-- 3. 재무 핵심 지표 -->
+        <section>
+          <h2 class="report-section-title">재무 핵심 지표</h2>
+
+          <p v-if="financialError" class="panel-message">{{ financialError }}</p>
+
+          <div v-else-if="financial" class="report-financial-grid">
+            <div class="metric-card">
+              <span>매출액</span>
+              <small class="metric-desc">회사가 한 해 동안 물건·서비스를 팔아 번 돈이에요</small>
+              <strong>{{ formatAmount(financial.revenue ?? financial.totalRevenue ?? financial.매출액) }}</strong>
+            </div>
+            <div class="metric-card">
+              <span>영업이익</span>
+              <small class="metric-desc">비용을 다 빼고 실제로 남긴 이익이에요</small>
+              <strong>{{ formatAmount(financial.operatingIncome ?? financial.operatingProfit ?? financial.영업이익) }}</strong>
+            </div>
+            <div class="metric-card">
+              <span>당기순이익</span>
+              <small class="metric-desc">세금까지 다 내고 최종적으로 회사에 남은 돈이에요</small>
+              <strong>{{ formatAmount(financial.netIncome ?? financial.netProfit ?? financial.당기순이익) }}</strong>
+            </div>
+            <div class="metric-card">
+              <span>부채비율</span>
+              <small class="metric-desc">빚이 자기 돈의 몇 배인지를 의미해요 - 낮을수록 안전해요</small>
+              <strong>{{ formatRate(financial.debtRatio ?? financial.debtToEquity ?? financial.부채비율) }}</strong>
+            </div>
+            <div class="metric-card">
+              <span>PER</span>
+              <small class="metric-desc">이익 대비 주가 수준을 의미해요 - 낮으면 저평가됐을 가능성이 있어요</small>
+              <strong>{{ formatMultiple(price?.per) }}</strong>
+            </div>
+            <div class="metric-card">
+              <span>PBR</span>
+              <small class="metric-desc">자산 대비 주가 수준을 의미해요. 1배 미만이면 자산보다 싸게 거래 중이에요</small>
+              <strong>{{ formatMultiple(price?.pbr) }}</strong>
+            </div>
+          </div>
+
+          <p v-else class="panel-message">재무 데이터가 없습니다.</p>
         </section>
 
         <!-- 5. 고지 문구 -->

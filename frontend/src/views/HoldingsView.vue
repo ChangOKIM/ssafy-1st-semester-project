@@ -214,19 +214,16 @@ onMounted(() => {
         <article class="metric-card">
           <span>총 매입금액</span>
           <strong>{{ formatMoney(totalPurchase) }}원</strong>
-          <p>수량 × 매입가 기준</p>
         </article>
         <article class="metric-card">
           <span>총 평가금액</span>
           <strong>{{ formatMoney(totalEvaluation) }}원</strong>
-          <p>현재가 조회 가능 시 현재가 기준</p>
         </article>
         <article class="metric-card">
           <span>전체 손익 / 수익률</span>
           <strong :class="{ positive: totalProfitRate >= 0, negative: totalProfitRate < 0 }">
             {{ formatMoney(totalProfitAmount) }}원 · {{ totalProfitRate.toFixed(2) }}%
           </strong>
-          <p>보유 종목 전체 기준</p>
         </article>
       </section>
 

@@ -23,7 +23,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
-      window.location.href = '/login?expired=true'
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+      window.location.href = `/login?expired=true&redirect=${redirect}`
     }
     return Promise.reject(error)
   }

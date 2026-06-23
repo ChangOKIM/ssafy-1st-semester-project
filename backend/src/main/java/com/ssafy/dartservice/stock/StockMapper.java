@@ -1,7 +1,10 @@
 package com.ssafy.dartservice.stock;
 
+import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface StockMapper {
@@ -16,5 +19,20 @@ public interface StockMapper {
                      @Param("sector") String sector);
 
     void insertStockInfo(@Param("stockCode") String stockCode,
-                         @Param("sector") String sector);
+                         @Param("sector") String sector,
+                         @Param("intro") String intro);
+
+    List<String> getSectors();
+
+    void updateMarketCap(@Param("stockCode") String stockCode,
+                         @Param("marketCap") Long marketCap);
+
+    List<StockSearchResponseDto> listStocks(@Param("keyword") String keyword,
+                                            @Param("sector") String sector,
+                                            @Param("sort") String sort,
+                                            @Param("size") int size,
+                                            @Param("offset") int offset);
+
+    int countStocksByKeyword(@Param("keyword") String keyword,
+                             @Param("sector") String sector);
 }

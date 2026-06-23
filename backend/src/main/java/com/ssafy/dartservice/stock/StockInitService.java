@@ -208,7 +208,7 @@ public class StockInitService {
         List<StockSectorEntry> stocks = loadSectors();
         int count = 0;
         for (StockSectorEntry s : stocks) {
-            stockMapper.insertStockInfo(s.code(), s.sector());
+            stockMapper.insertStockInfo(s.code(), s.sector(), s.intro());
             count++;
         }
         log.info("3. stock_info 완료 - {}건", count);
