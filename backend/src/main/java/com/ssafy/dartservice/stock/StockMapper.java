@@ -24,9 +24,6 @@ public interface StockMapper {
 
     List<String> getSectors();
 
-    void updateMarketCap(@Param("stockCode") String stockCode,
-                         @Param("marketCap") Long marketCap);
-
     List<StockSearchResponseDto> listStocks(@Param("keyword") String keyword,
                                             @Param("sector") String sector,
                                             @Param("sort") String sort,
@@ -37,4 +34,8 @@ public interface StockMapper {
                              @Param("sector") String sector);
 
     List<String> selectAllStockCodes();
+
+    List<StockSearchResponseDto> findByExactName(@Param("name") String name);
+
+    List<StockSearchResponseDto> findByNameLike(@Param("name") String name);
 }

@@ -29,11 +29,6 @@
         ORDER BY sector
     </select>
 
-    <update id="updateMarketCap">
-        UPDATE stock_info SET market_cap = #{marketCap}, updated_at = CURRENT_TIMESTAMP
-        WHERE stock_code = #{stockCode}
-    </update>
-
     <select id="listStocks" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
         SELECT s.stock_code  AS stockCode,
                s.stock_name  AS stockName,
@@ -73,6 +68,21 @@
                 AND sector = #{sector}
             </if>
         </where>
+    </select>
+
+
+    <select id="findByExactName" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
+        SELECT stock_code AS stockCode, stock_name AS stockName, market
+        FROM stocks
+        WHERE stock_name = #{name}
+    </select>
+
+    <select id="findByNameLike" resultType="com.ssafy.dartservice.report.dto.StockSearchResponseDto">
+        SELECT stock_code AS stockCode, stock_name AS stockName, market
+        FROM stocks
+        WHERE stock_name LIKE CONCAT('%', #{name}, '%')
+        ORDER BY stock_name
+        LIMIT 10
     </select>
 
 </mapper>

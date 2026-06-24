@@ -1,215 +1,129 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
-import { getStockPrice, getSectors, listAllStocks } from '../api/stockApi'
-
-const POLL_INTERVAL = 30_000
+import { getTopMarketCapStocks } from '../api/stockApi'
 
 const router = useRouter()
-
-const inputKeyword = ref('')
-const keyword = ref('')
-const selectedSector = ref('')
-const sectors = ref([])
 const stocks = ref([])
-const priceMap = ref({})
-const total = ref(0)
-const page = ref(0)
-const PAGE_SIZE = 20
-
 const loading = ref(false)
-const pricesLoading = ref(false)
 const errorMsg = ref('')
+const fetchedAt = ref('')
 
-const totalPages = computed(() => Math.ceil(total.value / PAGE_SIZE))
+const leftColumn = computed(() => stocks.value.slice(0, 15))
+const rightColumn = computed(() => stocks.value.slice(15, 30))
 
-function selectSector(sector) {
-  selectedSector.value = sector
-  page.value = 0
-  loadStocks()
+function formatFetchedAt() {
+  const now = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())} 기준`
 }
 
-function unwrap(response) {
-  return response?.data?.data ?? response?.data ?? {}
+function changeClass(sign) {
+  if (sign === 'UP') return 'positive'
+  if (sign === 'DOWN') return 'negative'
+  return 'muted'
 }
 
-async function loadSectors() {
-  try {
-    const res = await getSectors()
-    sectors.value = res?.data?.data ?? res?.data ?? []
-  } catch {
-    sectors.value = []
-  }
+function changeSymbol(sign) {
+  if (sign === 'UP') return '▲'
+  if (sign === 'DOWN') return '▼'
+  return '–'
 }
 
-async function loadStocks() {
+async function loadTopStocks() {
   loading.value = true
   errorMsg.value = ''
-  priceMap.value = {}
   try {
-    const res = unwrap(await listAllStocks(keyword.value, selectedSector.value, page.value, PAGE_SIZE))
-    stocks.value = res.stocks ?? []
-    total.value = res.total ?? 0
+    const res = await getTopMarketCapStocks()
+    stocks.value = res?.data ?? []
+    fetchedAt.value = formatFetchedAt()
   } catch {
-    errorMsg.value = '종목 목록을 불러올 수 없습니다.'
-    stocks.value = []
-    total.value = 0
+    errorMsg.value = '시총 상위 종목을 불러올 수 없습니다.'
+  } finally {
     loading.value = false
-    return
-  }
-  loading.value = false
-  await loadPrices()
-  startPolling()
-}
-
-let pollTimer = null
-
-function stopPolling() {
-  if (pollTimer !== null) {
-    clearInterval(pollTimer)
-    pollTimer = null
   }
 }
 
-function startPolling() {
-  stopPolling()
-  pollTimer = setInterval(() => {
-    if (!document.hidden) loadPrices()
-  }, POLL_INTERVAL)
-}
-
-async function loadPrices() {
-  if (!stocks.value.length || pricesLoading.value) return
-  pricesLoading.value = true
-  const snapshot = [...stocks.value]
-  const results = await Promise.allSettled(
-    snapshot.map((s) => getStockPrice(s.stockCode))
-  )
-  const newMap = {}
-  results.forEach((res, i) => {
-    if (res.status === 'fulfilled') {
-      const raw = res.value?.data?.data ?? res.value?.data ?? null
-      const price = Array.isArray(raw) ? (raw[0] ?? null) : raw
-      if (price) newMap[snapshot[i].stockCode] = price
-    }
-  })
-  priceMap.value = { ...priceMap.value, ...newMap }
-  pricesLoading.value = false
-}
-
-function onVisibilityChange() {
-  if (!document.hidden) loadPrices()
-}
-
-function search() {
-  keyword.value = inputKeyword.value.trim()
-  page.value = 0
-  loadStocks()
-}
-
-function goPage(p) {
-  if (p < 0 || p >= totalPages.value) return
-  page.value = p
-  loadStocks()
-}
-
-function priceOf(code) {
-  const p = priceMap.value[code]
-  return p ? Number(p.currentPrice ?? 0) : null
-}
-
-function changeOf(code) {
-  const p = priceMap.value[code]
-  return p ? Number(p.changeRate ?? 0) : null
-}
-
-onMounted(() => {
-  loadSectors()
-  loadStocks()
-  document.addEventListener('visibilitychange', onVisibilityChange)
-})
-
-onUnmounted(() => {
-  stopPolling()
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-})
+onMounted(loadTopStocks)
 </script>
 
 <template>
   <div class="page-shell">
     <AppHeader />
 
-    <main class="stocks-page">
-      <div class="stocks-page-header">
-        <div>
-          <h1 class="stocks-page-title">전체 종목</h1>
-          <p class="muted stocks-total">총 {{ total.toLocaleString() }}개 종목</p>
-        </div>
-
-        <form class="stock-search" @submit.prevent="search">
-          <input v-model="inputKeyword" type="search" placeholder="종목명 또는 코드로 검색" />
-          <button type="submit">검색</button>
-        </form>
+    <main class="recs-page top30-page">
+      <div v-if="loading" class="recs-loading">
+        <p>불러오는 중입니다…</p>
       </div>
 
-      <!-- 섹터 필터 -->
-      <div v-if="sectors.length" class="sector-chips">
-        <button
-          type="button"
-          :class="['sector-chip', { active: selectedSector === '' }]"
-          @click="selectSector('')"
-        >전체</button>
-        <button
-          v-for="s in sectors"
-          :key="s"
-          type="button"
-          :class="['sector-chip', { active: selectedSector === s }]"
-          @click="selectSector(s)"
-        >{{ s }}</button>
-      </div>
+      <template v-else>
+        <!-- 페이지 헤더 -->
+        <section class="recs-header">
+          <p class="eyebrow">코스피200</p>
+          <h1>시가총액 TOP 30</h1>
+          <p>{{ fetchedAt }}</p>
+        </section>
 
-      <p v-if="errorMsg" class="panel-message">{{ errorMsg }}</p>
-      <div v-else-if="loading" class="panel-message">종목 목록을 불러오는 중입니다…</div>
-      <div v-else-if="!stocks.length" class="panel-message">검색 결과가 없습니다.</div>
-
-      <div v-else class="stocks-list">
-        <button
-          v-for="stock in stocks"
-          :key="stock.stockCode"
-          type="button"
-          class="stock-row"
-          @click="router.push('/report/' + stock.stockCode)"
-        >
-          <div class="stock-row-left">
-            <strong class="stock-row-name">{{ stock.stockName }}</strong>
-            <div class="stock-row-meta">
-              <span class="code-tag">{{ stock.stockCode }}</span>
-              <span class="market-tag" :class="stock.market === 'KOSPI' ? 'kospi' : 'kosdaq'">{{ stock.market }}</span>
-              <span v-if="stock.sector" class="sector-tag">{{ stock.sector }}</span>
-            </div>
+        <!-- 종목 리스트 -->
+        <section>
+          <div class="recs-section-head">
+            <h2>시가총액 상위 30개 종목</h2>
+            <span class="recs-badge">실시간 시세</span>
           </div>
 
-          <div class="stock-row-right">
-            <span class="stock-row-price">
-              {{ priceOf(stock.stockCode) != null ? priceOf(stock.stockCode).toLocaleString() + '원' : (pricesLoading ? '…' : '-') }}
-            </span>
-            <span
-              v-if="changeOf(stock.stockCode) != null"
-              class="stock-row-change"
-              :class="changeOf(stock.stockCode) >= 0 ? 'positive' : 'negative'"
-            >{{ changeOf(stock.stockCode) >= 0 ? '▲' : '▼' }}{{ Math.abs(changeOf(stock.stockCode)).toFixed(2) }}%</span>
-            <span v-else class="stock-row-change muted">—</span>
-          </div>
-        </button>
-      </div>
+          <p v-if="errorMsg" class="panel-message">{{ errorMsg }}</p>
 
-      <div v-if="!loading && totalPages > 1" class="stocks-pagination">
-        <button type="button" :disabled="page === 0" @click="goPage(page - 1)">이전</button>
-        <span>{{ page + 1 }} / {{ totalPages }}</span>
-        <button type="button" :disabled="page >= totalPages - 1" @click="goPage(page + 1)">다음</button>
-      </div>
+          <div v-else class="recs-overall-card top30-dual-card">
+            <ol class="recs-rank-list">
+              <li
+                v-for="stock in leftColumn"
+                :key="stock.stockCode"
+                class="recs-rank-item top30-rank-item recs-clickable"
+                @click="router.push('/report/' + stock.stockCode)"
+              >
+                <em class="recs-rank-num">{{ stock.rank }}</em>
+                <span class="top30-item-name">
+                  <strong>{{ stock.stockName }}</strong>
+                  <small>({{ stock.stockCode }})</small>
+                </span>
+                <span class="rec-price-group">
+                  <span class="rec-price">{{ stock.currentPrice.toLocaleString() }}원</span>
+                  <span class="rec-change" :class="changeClass(stock.priceChangeSign)">
+                    {{ changeSymbol(stock.priceChangeSign) }}{{ Math.abs(stock.changeRate).toFixed(2) }}%
+                  </span>
+                </span>
+              </li>
+            </ol>
+
+            <ol class="recs-rank-list">
+              <li
+                v-for="stock in rightColumn"
+                :key="stock.stockCode"
+                class="recs-rank-item top30-rank-item recs-clickable"
+                @click="router.push('/report/' + stock.stockCode)"
+              >
+                <em class="recs-rank-num">{{ stock.rank }}</em>
+                <span class="top30-item-name">
+                  <strong>{{ stock.stockName }}</strong>
+                  <small>({{ stock.stockCode }})</small>
+                </span>
+                <span class="rec-price-group">
+                  <span class="rec-price">{{ stock.currentPrice.toLocaleString() }}원</span>
+                  <span class="rec-change" :class="changeClass(stock.priceChangeSign)">
+                    {{ changeSymbol(stock.priceChangeSign) }}{{ Math.abs(stock.changeRate).toFixed(2) }}%
+                  </span>
+                </span>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <p class="recs-disclosure muted">
+          본 화면에서 제공하는 정보는 학습 및 투자 참고용이며, 실제 투자 판단과 그에 따른 책임은 사용자에게 있습니다.
+        </p>
+      </template>
     </main>
 
     <AppFooter />

@@ -97,4 +97,17 @@ public interface HoldingRepository {
 		  AND user_id = #{userId}
 		""")
 	int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+	@Select("SELECT content FROM portfolio WHERE user_id = #{userId} AND holdings_hash = #{hash}")
+	String findCachedDiagnosis(@Param("userId") Long userId, @Param("hash") String hash);
+
+	@Insert("""
+		INSERT INTO portfolio (user_id, holdings_hash, content)
+		VALUES (#{userId}, #{hash}, #{content})
+		ON DUPLICATE KEY UPDATE holdings_hash = #{hash}, content = #{content}, generated_at = CURRENT_TIMESTAMP
+		""")
+	void saveDiagnosis(@Param("userId") Long userId, @Param("hash") String hash, @Param("content") String content);
+
+	@Delete("DELETE FROM portfolio WHERE user_id = #{userId}")
+	void deleteDiagnosis(@Param("userId") Long userId);
 }

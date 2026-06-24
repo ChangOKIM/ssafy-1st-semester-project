@@ -2,6 +2,7 @@ package com.ssafy.dartservice.portfolio;
 
 import com.ssafy.dartservice.global.response.ApiResponse;
 import com.ssafy.dartservice.global.security.CustomUserDetails;
+import com.ssafy.dartservice.portfolio.dto.HoldingExtractResponse;
 import com.ssafy.dartservice.portfolio.dto.HoldingRequest;
 import com.ssafy.dartservice.portfolio.dto.HoldingResponse;
 import com.ssafy.dartservice.portfolio.dto.HoldingSummaryResponse;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HoldingController {
 
 	private final HoldingService holdingService;
+	private final HoldingExtractService holdingExtractService;
 
 	@GetMapping
 	public ApiResponse<List<HoldingResponse>> getHoldings(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -59,5 +63,12 @@ public class HoldingController {
 	@GetMapping("/diagnosis")
 	public ApiResponse<HoldingSummaryResponse> diagnose(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		return ApiResponse.success(holdingService.diagnose(userDetails.getUser()));
+	}
+
+	@PostMapping("/extract")
+	public ApiResponse<List<HoldingExtractResponse>> extractFromImage(
+		@RequestParam("image") MultipartFile file
+	) {
+		return ApiResponse.success(holdingExtractService.extract(file));
 	}
 }

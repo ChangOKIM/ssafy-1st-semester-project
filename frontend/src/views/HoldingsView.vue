@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
-import { createHolding, deleteHolding, getHoldingDiagnosis, getHoldings, updateHolding } from '../api/holdingApi'
+import { createHolding, deleteHolding, extractHoldingsFromImage, getHoldingDiagnosis, getHoldings, updateHolding } from '../api/holdingApi'
 import { searchStocks } from '../api/stockApi'
 
 const holdings = ref([])
@@ -14,6 +14,68 @@ const holdingEditingId = ref(null)
 const holdingMessage = ref('')
 const holdingSearchKeyword = ref('')
 const holdingSearchResults = ref([])
+
+// 사진 추출
+const showExtract = ref(false)
+const extractFile = ref(null)
+const extractFileInput = ref(null)
+const extracting = ref(false)
+const extractError = ref('')
+const extractedItems = ref([])
+
+function onExtractFileChange(e) {
+  extractFile.value = e.target.files[0] ?? null
+}
+
+async function runExtract() {
+  if (!extractFile.value) {
+    extractError.value = '이미지를 선택해 주세요.'
+    return
+  }
+  extracting.value = true
+  extractError.value = ''
+  extractedItems.value = []
+  try {
+    const res = await extractHoldingsFromImage(extractFile.value)
+    const list = res?.data?.data ?? res?.data ?? []
+    extractedItems.value = list.map((item) => ({
+      ...item,
+      selectedCode: item.stockCode || (item.candidates?.[0]?.code ?? ''),
+    }))
+    if (!extractedItems.value.length) extractError.value = '추출된 종목이 없습니다.'
+  } catch {
+    extractError.value = '이미지 분석에 실패했습니다.'
+  } finally {
+    extracting.value = false
+  }
+}
+
+async function addExtractedItem(item) {
+  const code = item.selectedCode
+  if (!code) {
+    holdingMessage.value = '종목 코드를 선택해 주세요.'
+    return
+  }
+  const candidateName = item.candidates?.find((c) => c.code === code)?.name ?? item.name
+  holdingSaving.value = true
+  holdingMessage.value = ''
+  try {
+    await createHolding({
+      stockCode: code,
+      quantity: Number(item.quantity ?? 1),
+      purchasePrice: Number(item.avgPrice ?? 0),
+      purchaseDate: new Date().toISOString().slice(0, 10),
+    })
+    extractedItems.value = extractedItems.value.filter((i) => i !== item)
+    holdingMessage.value = `${candidateName} 추가 완료`
+    loadHoldings()
+    loadDiagnosis()
+  } catch (e) {
+    holdingMessage.value = e.response?.data?.error?.message || '추가에 실패했습니다.'
+  } finally {
+    holdingSaving.value = false
+  }
+}
 
 const holdingForm = reactive({
   stockCode: '',
@@ -275,6 +337,7 @@ onMounted(() => {
               {{ holdingEditingId ? '보유 종목 수정' : '보유 종목 추가' }}
             </button>
             <button class="secondary-action" type="button" @click="resetHoldingForm">취소</button>
+            <button class="secondary-action" type="button" @click="showExtract = !showExtract">📷 사진으로 추가</button>
           </div>
           <p v-if="holdingMessage" class="panel-message">{{ holdingMessage }}</p>
         </form>
@@ -331,6 +394,56 @@ onMounted(() => {
         <p v-else class="panel-message">보유 종목을 등록하면 전체 매입금액, 평가금액, 수익률을 요약합니다.</p>
       </section>
     </main>
+
+    <!-- 사진으로 추가 모달 -->
+    <Teleport to="body">
+      <div v-if="showExtract" class="extract-modal-backdrop" @click.self="showExtract = false">
+        <div class="extract-modal">
+          <div class="extract-modal-head">
+            <strong>📷 사진으로 보유종목 추가</strong>
+            <button type="button" class="extract-modal-close" @click="showExtract = false">✕</button>
+          </div>
+          <p class="extract-desc muted">보유 종목 화면 캡처 이미지를 업로드하면 AI가 종목·수량·매입가를 자동으로 읽어냅니다.</p>
+          <div class="extract-upload-row">
+            <input ref="extractFileInput" type="file" accept="image/*" class="extract-file-input" @change="onExtractFileChange" />
+            <button type="button" class="primary-action" :disabled="extracting" @click="runExtract">
+              {{ extracting ? '분석 중…' : '분석하기' }}
+            </button>
+          </div>
+          <p v-if="extractError" class="panel-message">{{ extractError }}</p>
+
+          <div v-if="extractedItems.length" class="extract-results">
+            <p class="extract-results-title">추출 결과 — 확인 후 추가하세요</p>
+            <div v-for="(item, idx) in extractedItems" :key="idx" class="extract-item">
+              <div class="extract-item-info">
+                <strong>{{ item.name }}</strong>
+                <span>{{ Number(item.quantity ?? 0).toLocaleString() }}주</span>
+                <span>{{ Number(item.avgPrice ?? 0).toLocaleString() }}원</span>
+              </div>
+              <div class="extract-item-code">
+                <template v-if="item.stockCode">
+                  <span class="code-tag">{{ item.stockCode }}</span>
+                </template>
+                <template v-else-if="item.candidates?.length">
+                  <select v-model="item.selectedCode" class="extract-candidate-select">
+                    <option v-for="c in item.candidates" :key="c.code" :value="c.code">
+                      {{ c.name }} ({{ c.code }})
+                    </option>
+                  </select>
+                </template>
+                <span v-else class="muted">매칭 실패</span>
+              </div>
+              <button
+                type="button"
+                class="primary-action extract-add-btn"
+                :disabled="!item.selectedCode || holdingSaving"
+                @click="addExtractedItem(item)"
+              >추가</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <AppFooter />
   </div>

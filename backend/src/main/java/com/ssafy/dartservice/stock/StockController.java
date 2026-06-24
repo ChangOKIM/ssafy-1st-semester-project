@@ -3,6 +3,7 @@ package com.ssafy.dartservice.stock;
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
 import com.ssafy.dartservice.stock.dto.ChartResponseDto;
 import com.ssafy.dartservice.stock.dto.FinancialResponseDto;
+import com.ssafy.dartservice.stock.dto.MarketCapTopItemDto;
 import com.ssafy.dartservice.stock.dto.StockPriceResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ public class StockController {
     private final ChartService chartService;
     private final FinancialService financialService;
     private final StockMapper stockMapper;
+    private final MarketCapRankingService marketCapRankingService;
 
     @GetMapping("/sectors")
     public ResponseEntity<List<String>> getSectors() {
@@ -51,10 +53,9 @@ public class StockController {
         return ResponseEntity.ok("종목 데이터 저장 완료");
     }
 
-    @PostMapping("/init-marketcap")
-    public ResponseEntity<String> initMarketCap() {
-        int updated = stockService.fetchAndStoreMarketCapRankings();
-        return ResponseEntity.ok("시가총액 저장 완료: " + updated + "개 종목");
+    @GetMapping("/market-cap/top")
+    public ResponseEntity<List<MarketCapTopItemDto>> getTopMarketCapStocks() {
+        return ResponseEntity.ok(marketCapRankingService.getTopMarketCapStocks());
     }
 
     @GetMapping("/{code}/price")

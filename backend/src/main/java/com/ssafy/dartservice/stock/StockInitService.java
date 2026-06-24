@@ -38,6 +38,7 @@ public class StockInitService {
     private final StockMapper stockMapper;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
+    private final MarketCapRankingService marketCapRankingService;
 
     @Value("${krx.api-key}")
     private String krxApiKey;
@@ -50,6 +51,12 @@ public class StockInitService {
         initStocks();
         initFinancials();
         initStockInfo();
+        try {
+            marketCapRankingService.getTopMarketCapStocks();
+            log.info("4. 시총 상위 캐시 워밍업 완료");
+        } catch (Exception e) {
+            log.warn("4. 시총 상위 캐시 워밍업 실패 (앱 기동 계속): {}", e.getMessage());
+        }
     }
 
     // === 1. 코스피 종목 마스터 ===

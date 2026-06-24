@@ -19,3 +19,11 @@ export function deleteHolding(id) {
 export function getHoldingDiagnosis() {
   return api.get('/holdings/diagnosis')
 }
+
+export function extractHoldingsFromImage(file) {
+  const formData = new FormData()
+  formData.append('image', file)
+  return api.post('/holdings/extract', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}

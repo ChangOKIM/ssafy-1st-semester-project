@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS recommendations (
     CONSTRAINT fk_rec_stock FOREIGN KEY (stock_code) REFERENCES stocks (stock_code) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 8. portfolio (포트폴리오 AI 진단 캐시)
+CREATE TABLE IF NOT EXISTS portfolio (
+    user_id      BIGINT       NOT NULL,
+    holdings_hash VARCHAR(64) NOT NULL,
+    content      TEXT         NOT NULL,
+    generated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id),
+    CONSTRAINT fk_portfolio_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 7. holdings (P1 — 나의 투자 현황)
 CREATE TABLE IF NOT EXISTS holdings (
     id             BIGINT         NOT NULL AUTO_INCREMENT,

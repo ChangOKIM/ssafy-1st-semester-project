@@ -23,7 +23,7 @@ function logout() {
 
       <nav class="main-nav" aria-label="주요 메뉴">
         <RouterLink to="/">홈</RouterLink>
-        <RouterLink to="/stocks">전체 종목</RouterLink>
+        <RouterLink to="/stocks">TOP 30</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/recommendations">AI 추천</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/holdings">투자현황</RouterLink>
         <RouterLink v-if="isLoggedIn" to="/mypage">투자성향</RouterLink>

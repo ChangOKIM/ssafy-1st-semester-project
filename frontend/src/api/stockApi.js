@@ -35,3 +35,7 @@ export function getStockFinancial(code) {
 export function getStockAnalysis(code) {
   return api.get(`/reports/${code}/report`)
 }
+
+export function getTopMarketCapStocks() {
+  return api.get('/stocks/market-cap/top')
+}

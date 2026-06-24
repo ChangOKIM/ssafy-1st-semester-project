@@ -127,7 +127,7 @@ onUnmounted(() => {
         <section class="recs-header">
           <p class="eyebrow">AI 투자 추천</p>
           <h1>나에게 맞는 종목 추천</h1>
-          <p>투자 성향과 관심 분야를 반영한 맞춤 추천 목록입니다.</p>
+          <p>투자 성향과 관심 분야를 반영한 맞춤 추천 목록이에요</p>
         </section>
 
         <!-- 2. 종합 추천 TOP 10 -->
