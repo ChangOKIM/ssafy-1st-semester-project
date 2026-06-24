@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StockPriceResponseDto {
     private String currentPrice;      // 현재가
-    private String avls;              // 시가총액
     private String priceChange;       // 전일 대비
     private String changeRate;        // 등락률 (%)
     private String volume;            // 거래량

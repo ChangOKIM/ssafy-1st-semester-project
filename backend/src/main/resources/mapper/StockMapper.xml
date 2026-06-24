@@ -57,6 +57,10 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
+    <select id="selectAllStockCodes" resultType="string">
+        SELECT stock_code FROM stock_info
+    </select>
+
     <select id="countStocksByKeyword" resultType="int">
         SELECT COUNT(*)
         FROM stocks

@@ -35,4 +35,6 @@ public interface StockMapper {
 
     int countStocksByKeyword(@Param("keyword") String keyword,
                              @Param("sector") String sector);
+
+    List<String> selectAllStockCodes();
 }
