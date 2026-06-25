@@ -6,7 +6,7 @@ import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
 import { getStockPrice } from '../api/stockApi'
 
-const POLL_INTERVAL = 30_000
+const POLL_INTERVAL = 10_000
 
 const router = useRouter()
 

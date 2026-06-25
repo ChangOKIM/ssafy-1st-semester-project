@@ -4,21 +4,18 @@ import { RouterLink, useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
-import { getStockPrice, searchStocks } from '../api/stockApi'
+import { getStockPrice } from '../api/stockApi'
+import StockSearchBar from '../components/StockSearchBar.vue'
 import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const keyword = ref('')
-const searchResults = ref([])
-const searchLoading = ref(false)
-const searchMessage = ref('')
 const overallRecommendations = ref([])
 const recommendationMessage = ref('')
 const recPriceMap = ref({})
 const recPricesLoading = ref(false)
 
-const POLL_INTERVAL = 30_000
+const POLL_INTERVAL = 10_000
 let pollTimer = null
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
@@ -72,30 +69,6 @@ function recCurrentPrice(item) {
   return p ? Number(p.currentPrice ?? 0) : null
 }
 
-async function submitSearch() {
-  const trimmed = keyword.value.trim()
-  searchMessage.value = ''
-
-  if (trimmed.length < 2) {
-    searchResults.value = []
-    searchMessage.value = '종목명 또는 코드를 2글자 이상 입력하세요.'
-    return
-  }
-
-  searchLoading.value = true
-
-  try {
-    searchResults.value = unwrap(await searchStocks(trimmed)).slice(0, 8)
-    if (searchResults.value.length === 0) {
-      searchMessage.value = '검색 결과가 없습니다.'
-    }
-  } catch (error) {
-    searchResults.value = []
-    searchMessage.value = '종목 검색 API 응답을 확인할 수 없습니다.'
-  } finally {
-    searchLoading.value = false
-  }
-}
 
 function goToRecommendations() {
   if (!isLoggedIn.value) {
@@ -199,12 +172,8 @@ onUnmounted(() => {
             궁금한 종목을 검색하면 가격·재무·공시를 AI가 쉬운 말로 정리해드려요. 
           </p>
 
-          <form class="stock-search" @submit.prevent="submitSearch">
-            <input v-model="keyword" type="search" placeholder="예: 삼성전자, 005930" />
-            <button type="submit">{{ searchLoading ? '검색 중' : '검색' }}</button>
-          </form>
+          <StockSearchBar />
 
-          <!-- TODO: API 연동 — 인기 종목 실시간 데이터 연동 필요 -->
           <div class="popular-chips">
             <span class="popular-label">인기 종목</span>
             <button
@@ -215,15 +184,6 @@ onUnmounted(() => {
               @click="router.push('/report/' + stock.code)"
             >
               {{ stock.name }}
-            </button>
-          </div>
-
-          <div v-if="searchResults.length || searchMessage" class="search-panel">
-            <p v-if="searchMessage" class="panel-message">{{ searchMessage }}</p>
-            <button v-for="stock in searchResults" :key="stockCode(stock)" type="button" class="search-result"
-              @click="router.push('/report/' + stockCode(stock))">
-              <strong>{{ stockName(stock) }}</strong>
-              <span>{{ stockCode(stock) }}</span>
             </button>
           </div>
         </div>

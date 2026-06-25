@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { createHolding, deleteHolding, extractHoldingsFromImage, getHoldingDiagnosis, getHoldings, updateHolding } from '../api/holdingApi'
@@ -256,9 +256,29 @@ async function removeHolding(item) {
   }
 }
 
+const POLL_INTERVAL = 10_000
+let pollTimer = null
+
+async function refreshHoldings() {
+  try {
+    holdings.value = unwrap(await getHoldings())
+  } catch { /* ignore */ }
+}
+
+function onVisibilityChange() {
+  if (!document.hidden) refreshHoldings()
+}
+
 onMounted(() => {
   loadHoldings()
   loadDiagnosis()
+  pollTimer = setInterval(() => { if (!document.hidden) refreshHoldings() }, POLL_INTERVAL)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  clearInterval(pollTimer)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 </script>
 
@@ -267,7 +287,7 @@ onMounted(() => {
     <AppHeader />
 
     <main class="mypage">
-      <section class="mypage-header">
+      <section class="recs-header">
         <p class="eyebrow">Portfolio</p>
         <h1>투자현황</h1>
       </section>

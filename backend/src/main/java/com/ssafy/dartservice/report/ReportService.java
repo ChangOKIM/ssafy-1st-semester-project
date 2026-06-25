@@ -1,5 +1,7 @@
 package com.ssafy.dartservice.report;
 
+import com.ssafy.dartservice.global.exception.BusinessException;
+import com.ssafy.dartservice.global.exception.ErrorCode;
 import com.ssafy.dartservice.investor.InvestorProfile;
 import com.ssafy.dartservice.investor.InvestorProfileRepository;
 import com.ssafy.dartservice.report.dto.ReportInput;
@@ -58,9 +60,11 @@ public class ReportService {
     }
 
     public String getReport(String stockCode, int latestYear, User user) {
-        String level = investorProfileRepository.findByUser(user)
-                .map(InvestorProfile::getInvestmentExperience)
-                .orElse("BEGINNER");
+        String level = (user != null)
+                ? investorProfileRepository.findByUser(user)
+                        .map(InvestorProfile::getInvestmentExperience)
+                        .orElse("BEGINNER")
+                : "BEGINNER";
 
         String cached = reportMapper.findCachedReport(stockCode, level);
         if (cached != null) {
@@ -74,6 +78,9 @@ public class ReportService {
         var price = stockService.getStockPrice(stockCode);
 
         StockSearchResponseDto stock = reportMapper.findById(stockCode);
+        if ("금융".equals(stock.getSector())) {
+            throw new BusinessException(ErrorCode.FINANCIAL_SECTOR_NOT_SUPPORTED);
+        }
         String companyName = stock.getStockName();
         String guide = sectorGuide.get(stock.getSector());
 

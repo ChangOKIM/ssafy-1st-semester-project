@@ -43,6 +43,7 @@ public class SecurityConfig {
 				.requestMatchers("/stocks/**").permitAll() //, "/stocks/{code}/chart", "/stocks/{code}/financial", /stocks/{code}/price
 				.requestMatchers("/reports/search").permitAll()
 				.requestMatchers("/reports/*/info").permitAll()
+				.requestMatchers("/reports/*/report").permitAll()
 				.requestMatchers("/reports/**").authenticated()
 				//.requestMatchers("/recommendations/**", ).permitAll()
 				.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

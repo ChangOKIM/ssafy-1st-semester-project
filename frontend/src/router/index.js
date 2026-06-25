@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/auth/LoginView.vue'
 import SignupView from '../views/auth/SignupView.vue'
-import InvestorProfileView from '../views/investor/InvestorProfileView.vue'
 import HoldingsView from '../views/HoldingsView.vue'
 import MainView from '../views/MainView.vue'
 import RecommendationView from '../views/RecommendationView.vue'
@@ -18,12 +17,12 @@ const router = createRouter({
     { path: '/login', name: 'login', component: LoginView },
     { path: '/signup', name: 'signup', component: SignupView },
     { path: '/stocks', name: 'stocks', component: StocksView },
-    { path: '/investor-profile', name: 'investor-profile', component: InvestorProfileView, meta: { requiresAuth: true } },
+    { path: '/investor-profile', redirect: '/mypage' },
     { path: '/mypage', name: 'mypage', component: MyPageView, meta: { requiresAuth: true } },
     { path: '/myinfo', name: 'myinfo', component: MyInfoView, meta: { requiresAuth: true } },
     { path: '/recommendations', name: 'recommendations', component: RecommendationView, meta: { requiresAuth: true } },
     { path: '/holdings', name: 'holdings', component: HoldingsView, meta: { requiresAuth: true } },
-    { path: '/report/:code', name: 'report', component: ReportView, meta: { requiresAuth: true } },
+    { path: '/report/:code', name: 'report', component: ReportView },
   ],
 })
 

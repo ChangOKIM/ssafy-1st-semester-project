@@ -110,13 +110,13 @@ onMounted(loadProfile)
     <AppHeader />
 
     <main class="mypage">
-      <section class="mypage-header">
+      <section class="recs-header">
         <p class="eyebrow">Investment Profile</p>
         <h1>투자성향</h1>
       </section>
 
       <section class="profile-card wide-card">
-        <h2>투자성향 수정</h2>
+        <h2>투자성향 {{ profileLoaded ? '수정' : '입력' }}</h2>
         <p v-if="!profileLoaded" class="panel-message">등록된 투자 성향이 없으면 아래 값으로 새로 저장합니다.</p>
 
         <form class="profile-form" @submit.prevent="saveProfile">

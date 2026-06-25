@@ -107,7 +107,6 @@ async function submit() {
       <section class="auth-copy">
         <p class="eyebrow">Signup</p>
         <h1>투자 성향 기반 추천을 시작하세요.</h1>
-        <p>회원가입 후 투자경험, 위험감수 성향, 투자목표, 관심분야를 저장하면 추천 화면과 마이페이지에 반영됩니다.</p>
       </section>
 
       <form class="auth-card" @submit.prevent="submit">

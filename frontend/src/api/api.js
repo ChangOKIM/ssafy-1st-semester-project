@@ -21,10 +21,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      const redirect = encodeURIComponent(window.location.pathname + window.location.search)
-      window.location.href = `/login?expired=true&redirect=${redirect}`
+      const url = error.config?.url || ''
+      if (!url.includes('/auth/login')) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+        window.location.href = `/login?expired=true&redirect=${redirect}`
+      }
     }
     return Promise.reject(error)
   }

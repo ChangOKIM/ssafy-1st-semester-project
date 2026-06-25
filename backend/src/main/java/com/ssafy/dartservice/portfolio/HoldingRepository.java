@@ -19,7 +19,7 @@ public interface HoldingRepository {
 		       h.stock_code AS stockCode,
 		       s.stock_name AS stockName,
 		       s.market,
-		       s.sector,
+		       si.sector,
 		       h.quantity,
 		       h.purchase_price AS purchasePrice,
 		       h.purchase_date AS purchaseDate,
@@ -27,6 +27,7 @@ public interface HoldingRepository {
 		       h.updated_at AS updatedAt
 		FROM holdings h
 		JOIN stocks s ON s.stock_code = h.stock_code
+		LEFT JOIN stock_info si ON si.stock_code = h.stock_code
 		WHERE h.user_id = #{userId}
 		ORDER BY h.purchase_date DESC, h.id DESC
 		""")
@@ -38,7 +39,7 @@ public interface HoldingRepository {
 		       h.stock_code AS stockCode,
 		       s.stock_name AS stockName,
 		       s.market,
-		       s.sector,
+		       si.sector,
 		       h.quantity,
 		       h.purchase_price AS purchasePrice,
 		       h.purchase_date AS purchaseDate,
@@ -46,6 +47,7 @@ public interface HoldingRepository {
 		       h.updated_at AS updatedAt
 		FROM holdings h
 		JOIN stocks s ON s.stock_code = h.stock_code
+		LEFT JOIN stock_info si ON si.stock_code = h.stock_code
 		WHERE h.id = #{id}
 		  AND h.user_id = #{userId}
 		""")
@@ -57,7 +59,7 @@ public interface HoldingRepository {
 		       h.stock_code AS stockCode,
 		       s.stock_name AS stockName,
 		       s.market,
-		       s.sector,
+		       si.sector,
 		       h.quantity,
 		       h.purchase_price AS purchasePrice,
 		       h.purchase_date AS purchaseDate,
@@ -65,6 +67,7 @@ public interface HoldingRepository {
 		       h.updated_at AS updatedAt
 		FROM holdings h
 		JOIN stocks s ON s.stock_code = h.stock_code
+		LEFT JOIN stock_info si ON si.stock_code = h.stock_code
 		WHERE h.user_id = #{userId}
 		  AND h.stock_code = #{stockCode}
 		""")

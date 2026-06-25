@@ -38,7 +38,7 @@ public class MarketCapRankingService {
     @Value("${kis.base-url}")
     private String kisBaseUrl;
 
-    private static final Duration CACHE_TTL = Duration.ofHours(6);
+    private static final Duration CACHE_TTL = Duration.ofSeconds(30);
 
     private volatile List<MarketCapTopItemDto> cache = List.of();
     private volatile Instant cacheUpdatedAt = Instant.EPOCH;
@@ -71,7 +71,7 @@ public class MarketCapRankingService {
             headers.set("authorization", "Bearer " + kisTokenService.getAccessToken());
             headers.set("appkey", kisAppKey);
             headers.set("appsecret", kisAppSecret);
-            headers.set("tr_id", "FHPST01740000"); // TODO: 문서 대조 필요
+            headers.set("tr_id", "FHPST01710000");
             headers.set("custtype", "P");
 
             ResponseEntity<KisMarketCapTopResponse> response = restTemplate.exchange(

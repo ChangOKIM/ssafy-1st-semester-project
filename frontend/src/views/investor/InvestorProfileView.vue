@@ -31,7 +31,7 @@ const riskOptions = [
 
 const goalOptions = [
   { value: 'STABLE_GROWTH', label: '안정 성장' },
-  { value: 'HIGH_RETURN', label: '고수익 추구' },
+  { value: 'CAPITAL_GAIN', label: '시세 차익' },
   { value: 'DIVIDEND', label: '배당 중심' },
   { value: 'LONG_TERM', label: '장기 투자' },
 ]
@@ -94,7 +94,7 @@ async function submit() {
       <section class="profile-header">
         <p class="eyebrow">Investor profile</p>
         <h1>맞춤 추천을 위한 투자 성향을 입력하세요.</h1>
-        <p>입력값은 DB `users_profile`에 저장되고 마이페이지와 추천 API의 기준 데이터로 사용됩니다.</p>
+
       </section>
 
       <form class="auth-card" @submit.prevent="submit">

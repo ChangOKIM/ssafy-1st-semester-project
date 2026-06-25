@@ -83,8 +83,7 @@ onMounted(loadMe)
     <main class="mypage">
       <section class="mypage-header">
         <p class="eyebrow">Account</p>
-        <h1>내정보</h1>
-        <p>이름, 이메일, 프로필 이미지를 관리합니다.</p>
+        <h1>회원 정보</h1>
       </section>
 
       <section class="profile-card wide-card account-card">

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
@@ -32,6 +32,9 @@ function changeSymbol(sign) {
   return '–'
 }
 
+const POLL_INTERVAL = 10_000
+let pollTimer = null
+
 async function loadTopStocks() {
   loading.value = true
   errorMsg.value = ''
@@ -46,7 +49,28 @@ async function loadTopStocks() {
   }
 }
 
-onMounted(loadTopStocks)
+async function refreshStocks() {
+  try {
+    const res = await getTopMarketCapStocks()
+    stocks.value = res?.data ?? []
+    fetchedAt.value = formatFetchedAt()
+  } catch { /* ignore */ }
+}
+
+function onVisibilityChange() {
+  if (!document.hidden) refreshStocks()
+}
+
+onMounted(async () => {
+  await loadTopStocks()
+  pollTimer = setInterval(() => { if (!document.hidden) refreshStocks() }, POLL_INTERVAL)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+})
+
+onUnmounted(() => {
+  clearInterval(pollTimer)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+})
 </script>
 
 <template>
@@ -62,16 +86,17 @@ onMounted(loadTopStocks)
         <!-- 페이지 헤더 -->
         <section class="recs-header">
           <p class="eyebrow">코스피200</p>
-          <h1>시가총액 TOP 30</h1>
-          <p>{{ fetchedAt }}</p>
+          <h1>시가총액 TOP 30 </h1>
+          <p>{{ fetchedAt }} </p>
+          
         </section>
 
         <!-- 종목 리스트 -->
         <section>
-          <div class="recs-section-head">
+          <!-- <div class="recs-section-head">
             <h2>시가총액 상위 30개 종목</h2>
             <span class="recs-badge">실시간 시세</span>
-          </div>
+          </div> -->
 
           <p v-if="errorMsg" class="panel-message">{{ errorMsg }}</p>
 

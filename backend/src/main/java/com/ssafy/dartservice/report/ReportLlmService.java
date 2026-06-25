@@ -12,7 +12,7 @@ public class ReportLlmService {
 
     private final ChatClient chatClient;
 
-    public ReportLlmService(@Qualifier("openaiChatClient") ChatClient chatClient) {
+    public ReportLlmService(@Qualifier("anthropicChatClient") ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 

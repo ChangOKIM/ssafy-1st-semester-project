@@ -13,8 +13,8 @@
     </select>
 
     <insert id="insertStock">
-        INSERT IGNORE INTO stocks (stock_code, corp_code, stock_name, market, sector)
-        VALUES (#{stockCode}, #{corpCode}, #{stockName}, #{market}, #{sector})
+        INSERT IGNORE INTO stocks (stock_code, corp_code, stock_name, market)
+        VALUES (#{stockCode}, #{corpCode}, #{stockName}, #{market})
     </insert>
 
     <insert id="insertStockInfo">
@@ -24,7 +24,7 @@
     </insert>
 
     <select id="getSectors" resultType="string">
-        SELECT DISTINCT sector FROM stocks
+        SELECT DISTINCT sector FROM stock_info
         WHERE sector IS NOT NULL AND sector != ''
         ORDER BY sector
     </select>
@@ -33,7 +33,7 @@
         SELECT s.stock_code  AS stockCode,
                s.stock_name  AS stockName,
                s.market      AS market,
-               s.sector      AS sector
+               si.sector     AS sector
         FROM stocks s
         LEFT JOIN stock_info si ON s.stock_code = si.stock_code
         <where>
@@ -42,7 +42,7 @@
                 OR s.stock_code LIKE CONCAT(#{keyword}, '%'))
             </if>
             <if test="sector != null and sector != ''">
-                AND s.sector = #{sector}
+                AND si.sector = #{sector}
             </if>
         </where>
         <choose>
@@ -58,14 +58,15 @@
 
     <select id="countStocksByKeyword" resultType="int">
         SELECT COUNT(*)
-        FROM stocks
+        FROM stocks s
+        LEFT JOIN stock_info si ON s.stock_code = si.stock_code
         <where>
             <if test="keyword != null and keyword != ''">
-                (stock_name LIKE CONCAT(#{keyword}, '%')
-                OR stock_code LIKE CONCAT(#{keyword}, '%'))
+                (s.stock_name LIKE CONCAT(#{keyword}, '%')
+                OR s.stock_code LIKE CONCAT(#{keyword}, '%'))
             </if>
             <if test="sector != null and sector != ''">
-                AND sector = #{sector}
+                AND si.sector = #{sector}
             </if>
         </where>
     </select>

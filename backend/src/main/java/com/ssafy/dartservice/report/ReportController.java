@@ -2,6 +2,7 @@ package com.ssafy.dartservice.report;
 
 import com.ssafy.dartservice.global.security.CustomUserDetails;
 import com.ssafy.dartservice.report.dto.StockSearchResponseDto;
+import com.ssafy.dartservice.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,7 +41,8 @@ public class ReportController {
             @PathVariable String code,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         int latestYear = LocalDate.now().getYear() - 1;
-        String report = reportService.getReport(code, latestYear, userDetails.getUser());
+        User user = userDetails != null ? userDetails.getUser() : null;
+        String report = reportService.getReport(code, latestYear, user);
         return ResponseEntity.ok(report);
     }
 }

@@ -12,7 +12,8 @@ public enum ErrorCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다."),
 	INVALID_IMAGE(HttpStatus.BAD_REQUEST, "INVALID_IMAGE", "이미지 파일만 업로드 가능합니다."),
 	IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "IMAGE_TOO_LARGE", "파일 크기는 10MB 이하여야 합니다."),
-	EXTRACT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EXTRACT_FAILED", "이미지에서 종목 정보를 추출할 수 없습니다.");
+	EXTRACT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EXTRACT_FAILED", "이미지에서 종목 정보를 추출할 수 없습니다."),
+	FINANCIAL_SECTOR_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "FINANCIAL_SECTOR_NOT_SUPPORTED", "금융업종은 AI 리포트를 제공하지 않습니다.");
 
 	private final HttpStatus status;
 	private final String code;

@@ -39,8 +39,7 @@ CREATE TABLE IF NOT EXISTS stocks (
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uk_stocks_code (stock_code),
-    INDEX idx_stocks_name (stock_name),
-    INDEX idx_stocks_sector (sector)
+    INDEX idx_stocks_name (stock_name)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS stock_info (

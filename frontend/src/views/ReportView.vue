@@ -6,6 +6,7 @@ import 'chartjs-adapter-date-fns'
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
+import StockSearchBar from '../components/StockSearchBar.vue'
 import { getStockAnalysis, getStockChart, getStockFinancial, getStockInfo, getStockPrice } from '../api/stockApi'
 
 Chart.register(LinearScale, TimeScale, TimeSeriesScale, Tooltip, CandlestickController, CandlestickElement)
@@ -83,6 +84,7 @@ const isPositive = computed(() => Number(priceChange.value ?? 0) >= 0)
 
 const stockName = ref('')
 const stockInfo = ref(null)
+const isFinancialSector = computed(() => stockInfo.value?.sector === '금융')
 
 const POLL_INTERVAL = 30_000
 let priceTimer = null
@@ -292,7 +294,7 @@ onMounted(async () => {
   await loadMainData()
   startPricePolling()
   document.addEventListener('visibilitychange', onPriceVisibilityChange)
-  loadAnalysis()
+  if (!isFinancialSector.value) loadAnalysis()
 })
 watch(period, loadChart)
 onUnmounted(() => {
@@ -312,6 +314,11 @@ onUnmounted(() => {
       </div>
 
       <template v-else>
+        <!-- 종목 검색 -->
+        <StockSearchBar />
+
+        <hr class="report-divider" />
+
         <!-- 1. 종목명 / 현재 시세 -->
         <section class="report-price-section">
           <div class="report-name-price-row">
@@ -369,7 +376,11 @@ onUnmounted(() => {
         <section>
           <h2 class="report-section-title">AI 3분 리포트</h2>
 
-          <p v-if="analysisError" class="panel-message">{{ analysisError }}</p>
+          <div v-if="isFinancialSector" class="report-analysis-card">
+            <p class="panel-message">금융업종은 재무 구조가 일반 기업과 달라 AI 리포트를 제공하지 않습니다.</p>
+          </div>
+
+          <p v-else-if="analysisError" class="panel-message">{{ analysisError }}</p>
 
           <div v-else-if="analysisLoading" class="report-analysis-card">
             <p class="panel-message">AI 리포트 생성 중입니다… 잠시만 기다려 주세요.</p>
