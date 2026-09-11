@@ -4,7 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
-import { getStockPrice } from '../api/stockApi'
+import { getStockPrices } from '../api/stockApi'
 import StockSearchBar from '../components/StockSearchBar.vue'
 import { useAuthStore } from '../stores/authStore'
 
@@ -97,17 +97,15 @@ async function loadRecPrices() {
   const items = overallRecommendations.value
   if (!items.length || recPricesLoading.value) return
   recPricesLoading.value = true
-  const results = await Promise.allSettled(items.map((item) => getStockPrice(item.stockCode)))
-  const map = {}
-  results.forEach((res, i) => {
-    if (res.status === 'fulfilled') {
-      const raw = res.value?.data?.data ?? res.value?.data ?? null
-      const price = Array.isArray(raw) ? (raw[0] ?? null) : raw
-      if (price) map[items[i].stockCode] = price
-    }
-  })
-  recPriceMap.value = map
-  recPricesLoading.value = false
+  try {
+    const codes = items.map((item) => item.stockCode)
+    const raw = unwrap(await getStockPrices(codes))
+    recPriceMap.value = raw?.prices ?? {}
+  } catch {
+    // Keep the previous snapshot while Redis is warming up or temporarily unavailable.
+  } finally {
+    recPricesLoading.value = false
+  }
 }
 
 function onVisibilityChange() {

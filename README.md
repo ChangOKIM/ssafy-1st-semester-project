@@ -584,3 +584,15 @@ git status --short
 ```powershell
 git diff --cached
 ```
+
+# Redis 시세 캐시
+
+코스피 주요 193종목의 시세는 30초마다 Redis 스냅샷으로 갱신됩니다. 백엔드를 실행하기 전 Redis를 실행하세요.
+
+```bash
+docker compose up -d redis
+```
+
+기본 연결은 `localhost:6379`이며 `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`로 변경할 수 있습니다. Redis가 없으면 스케줄러는 KIS를 호출하지 않고 갱신을 건너뛰며, 시세 API는 `503 STOCK_PRICE_NOT_READY`를 반환합니다.
+
+호출량 계측 방법과 결과는 [`docs/REDIS_API_CALL_MEASUREMENT.md`](docs/REDIS_API_CALL_MEASUREMENT.md)에 있습니다.

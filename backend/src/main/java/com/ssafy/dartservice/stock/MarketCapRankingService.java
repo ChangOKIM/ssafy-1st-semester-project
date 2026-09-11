@@ -28,6 +28,7 @@ public class MarketCapRankingService {
     private final RestTemplate restTemplate;
     private final KisTokenService kisTokenService;
     private final StockMapper stockMapper;
+    private final StockPriceSnapshotRepository stockPriceSnapshotRepository;
 
     @Value("${kis.app-key}")
     private String kisAppKey;
@@ -46,9 +47,28 @@ public class MarketCapRankingService {
     public List<MarketCapTopItemDto> getTopMarketCapStocks() {
         if (!cache.isEmpty()
                 && Duration.between(cacheUpdatedAt, Instant.now()).compareTo(CACHE_TTL) < 0) {
-            return cache;
+            return withSnapshotPrices(cache);
         }
-        return refresh();
+        return withSnapshotPrices(refresh());
+    }
+
+    private List<MarketCapTopItemDto> withSnapshotPrices(List<MarketCapTopItemDto> rankings) {
+        if (rankings.isEmpty()) return rankings;
+        try {
+            var prices = stockPriceSnapshotRepository.findAll(rankings.stream().map(MarketCapTopItemDto::stockCode).toList());
+            return rankings.stream().map(item -> {
+                var price = prices.get(item.stockCode());
+                if (price == null) return item;
+                long change = parseLong(price.getPriceChange());
+                return new MarketCapTopItemDto(
+                        item.rank(), item.stockCode(), item.stockName(), parseLong(price.getCurrentPrice()),
+                        Math.abs(change), change > 0 ? "UP" : change < 0 ? "DOWN" : "FLAT",
+                        parseDouble(price.getChangeRate()), parseLong(price.getVolume()), item.marketCap(), item.marketShare());
+            }).toList();
+        } catch (Exception e) {
+            log.warn("Redis 시세 조회 실패 - KIS 시총 순위 응답의 가격을 유지합니다: {}", e.getMessage());
+            return rankings;
+        }
     }
 
     private List<MarketCapTopItemDto> refresh() {

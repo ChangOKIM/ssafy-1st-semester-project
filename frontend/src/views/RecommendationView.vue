@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import AppFooter from '../components/layout/AppFooter.vue'
 import AppHeader from '../components/layout/AppHeader.vue'
 import { getRecommendations } from '../api/recommendationApi'
-import { getStockPrice } from '../api/stockApi'
+import { getStockPrices } from '../api/stockApi'
 
 const POLL_INTERVAL = 10_000
 
@@ -58,17 +58,15 @@ async function loadPrices() {
   const codes = allCodes()
   if (!codes.length || pricesLoading.value) return
   pricesLoading.value = true
-  const results = await Promise.allSettled(codes.map((c) => getStockPrice(c)))
-  const map = {}
-  results.forEach((res, i) => {
-    if (res.status === 'fulfilled') {
-      const raw = res.value?.data?.data ?? res.value?.data ?? null
-      const price = Array.isArray(raw) ? (raw[0] ?? null) : raw
-      if (price) map[codes[i]] = price
-    }
-  })
-  priceMap.value = map
-  pricesLoading.value = false
+  try {
+    const response = await getStockPrices(codes)
+    const raw = response?.data?.data ?? response?.data ?? {}
+    priceMap.value = raw?.prices ?? {}
+  } catch {
+    // Keep the previous snapshot while Redis is warming up or temporarily unavailable.
+  } finally {
+    pricesLoading.value = false
+  }
 }
 
 function onVisibilityChange() {

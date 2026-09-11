@@ -9,6 +9,7 @@ public enum ErrorCode {
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
 	STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "STOCK_NOT_FOUND", "종목을 찾을 수 없습니다."),
+	STOCK_PRICE_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "STOCK_PRICE_NOT_READY", "시세 캐시를 준비 중입니다. 잠시 후 다시 시도해 주세요."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다."),
 	INVALID_IMAGE(HttpStatus.BAD_REQUEST, "INVALID_IMAGE", "이미지 파일만 업로드 가능합니다."),
 	IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "IMAGE_TOO_LARGE", "파일 크기는 10MB 이하여야 합니다."),

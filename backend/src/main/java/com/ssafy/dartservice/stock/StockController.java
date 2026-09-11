@@ -64,6 +64,18 @@ public class StockController {
         return ResponseEntity.ok(price);
     }
 
+    @GetMapping("/prices")
+    public ResponseEntity<com.ssafy.dartservice.stock.dto.StockPriceBatchResponse> getStockPrices(
+            @RequestParam List<String> codes) {
+        List<String> normalized = codes.stream()
+                .map(String::trim)
+                .filter(code -> !code.isBlank())
+                .distinct()
+                .limit(200)
+                .toList();
+        return ResponseEntity.ok(stockService.getStockPrices(normalized));
+    }
+
     @GetMapping("/{code}/chart")
     public ResponseEntity<List<ChartResponseDto>> getStockChart(
             @PathVariable String code,

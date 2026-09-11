@@ -24,6 +24,10 @@ export function getStockPrice(code) {
   return api.get(`/stocks/${code}/price`)
 }
 
+export function getStockPrices(codes) {
+  return api.get('/stocks/prices', { params: { codes: codes.join(',') } })
+}
+
 export function getStockChart(code, period = 'daily') {
   return api.get(`/stocks/${code}/chart`, { params: { period } })
 }
